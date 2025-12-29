@@ -1,0 +1,129 @@
+import React, { useState, useEffect } from 'react';
+import { db, initOnce } from './db';
+import { WorkoutSession, Pillar, AppConfig } from './types';
+import Dashboard from './views/Dashboard';
+import SetupWorkout from './views/SetupWorkout';
+import ActiveSession from './views/ActiveSession';
+import Summary from './views/Summary';
+import History from './views/History';
+import Settings from './views/Settings';
+import { Home, History as HistoryIcon, Settings as SettingsIcon, AlertCircle } from 'lucide-react';
+
+type View = 'dashboard' | 'setup' | 'session' | 'summary' | 'history' | 'settings';
+
+const App: React.FC = () => {
+  const [currentView, setCurrentView] = useState<View>('dashboard');
+  const [activeSession, setActiveSession] = useState<Partial<WorkoutSession> | null>(null);
+  const [lastFinishedSession, setLastFinishedSession] = useState<WorkoutSession | null>(null);
+  const [selectedFocus, setSelectedFocus] = useState<string | null>(null);
+  const [numPillars, setNumPillars] = useState(2);
+  const [config, setConfig] = useState<AppConfig | null>(null);
+  const [initialized, setInitialized] = useState(false);
+
+  useEffect(() => {
+    initOnce().then(async () => {
+      const cfg = await db.config.get('main');
+      setConfig(cfg || null);
+      setInitialized(true);
+    });
+  }, []);
+
+  if (!initialized) return <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white font-mono">LOADING_DB...</div>;
+
+  const startSetup = () => setCurrentView('setup');
+  
+  const startSession = (pillars: Pillar[]) => {
+    const session: Partial<WorkoutSession> = {
+      date: Date.now(),
+      pillarsPerformed: pillars.map(p => ({
+        pillarId: p.id,
+        name: p.name,
+        weight: p.prWeight > 0 ? p.prWeight : p.minWorkingWeight,
+        counted: false,
+        isPR: false,
+        warning: false
+      })),
+      accessoriesPerformed: []
+    };
+    setActiveSession(session);
+    setCurrentView('session');
+  };
+
+  const completeSession = (session: WorkoutSession) => {
+    setLastFinishedSession(session);
+    setCurrentView('summary');
+  };
+
+  const renderView = () => {
+    switch (currentView) {
+      case 'dashboard':
+        return <Dashboard onStart={startSetup} />;
+      case 'setup':
+        return (
+          <SetupWorkout 
+            onCancel={() => setCurrentView('dashboard')} 
+            onStart={startSession} 
+            selectedFocus={selectedFocus}
+            setSelectedFocus={setSelectedFocus}
+            numPillars={numPillars}
+            setNumPillars={setNumPillars}
+          />
+        );
+      case 'session':
+        return activeSession ? (
+          <ActiveSession 
+            initialSession={activeSession as WorkoutSession} 
+            onComplete={completeSession}
+            onCancel={() => {
+              if (confirm('Discard workout in progress?')) {
+                setCurrentView('dashboard');
+              }
+            }}
+          />
+        ) : <Dashboard onStart={startSetup} />;
+      case 'summary':
+        return lastFinishedSession ? (
+          <Summary session={lastFinishedSession} onDone={() => setCurrentView('dashboard')} />
+        ) : <Dashboard onStart={startSetup} />;
+      case 'history':
+        return <History />;
+      case 'settings':
+        return <Settings />;
+      default:
+        return <Dashboard onStart={startSetup} />;
+    }
+  };
+
+  return (
+    <div className="flex flex-col min-h-screen bg-gray-950 pb-20">
+      {config && !config.storagePersisted && currentView === 'dashboard' && (
+        <div className="bg-yellow-500/10 border-b border-yellow-500/20 px-4 py-2 flex items-center gap-2">
+          <AlertCircle size={14} className="text-yellow-500 shrink-0" />
+          <p className="text-[10px] text-yellow-200 font-medium">Storage is volatile. Export backups regularly.</p>
+          <button onClick={() => setCurrentView('settings')} className="text-[10px] text-yellow-500 underline ml-auto font-bold uppercase">Back Up</button>
+        </div>
+      )}
+
+      <main className="flex-grow">
+        {renderView()}
+      </main>
+      
+      <nav className="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800 flex justify-around p-3 z-50">
+        <button onClick={() => setCurrentView('dashboard')} className={`flex flex-col items-center gap-1 ${currentView === 'dashboard' || currentView === 'setup' || currentView === 'session' ? 'text-blue-500' : 'text-gray-400'}`}>
+          <Home size={20} />
+          <span className="text-xs">Home</span>
+        </button>
+        <button onClick={() => setCurrentView('history')} className={`flex flex-col items-center gap-1 ${currentView === 'history' ? 'text-blue-500' : 'text-gray-400'}`}>
+          <HistoryIcon size={20} />
+          <span className="text-xs">History</span>
+        </button>
+        <button onClick={() => setCurrentView('settings')} className={`flex flex-col items-center gap-1 ${currentView === 'settings' ? 'text-blue-500' : 'text-gray-400'}`}>
+          <SettingsIcon size={20} />
+          <span className="text-xs">Settings</span>
+        </button>
+      </nav>
+    </div>
+  );
+};
+
+export default App;
