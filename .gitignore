@@ -26,3 +26,7 @@ dist-ssr
 # Gemini
 GEMINI.md
 TASKS.md
+
+# User specific
+generate-tasks.md
+tasks/
