@@ -43,6 +43,19 @@ export const repository = {
   async addSession(session: WorkoutSession): Promise<number> {
     return db.sessions.add(session);
   },
+  async updateSession(id: number, updates: Partial<WorkoutSession>): Promise<number> {
+    return db.sessions.update(id, updates);
+  },
+  async deleteSession(id: number): Promise<void> {
+    return db.sessions.delete(id);
+  },
+  async getSessionsByPillar(pillarId: string): Promise<WorkoutSession[]> {
+    // Note: This is an unoptimized scan because pillars are in a nested array.
+    // For small local history, this is acceptable.
+    return db.sessions.filter(s => 
+      s.pillarsPerformed.some(p => p.pillarId === pillarId)
+    ).toArray();
+  },
   async getSessionCount(): Promise<number> {
     return db.sessions.count();
   },
