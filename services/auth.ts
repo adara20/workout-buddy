@@ -4,7 +4,7 @@ import {
   signOut as firebaseSignOut, 
   onAuthStateChanged,
   User
-} from 'firebase/auth';
+} from '@firebase/auth';
 import { auth } from './firebase-config';
 
 export const signUp = (email: string, pass: string) => 

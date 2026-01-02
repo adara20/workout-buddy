@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User } from 'firebase/auth';
+import { User } from '@firebase/auth';
 import { onAuthChange, signIn, signUp, signOut } from '../services/auth';
 import { uploadToCloud, downloadFromCloud } from '../services/cloud-rest';
 import { Cloud, Upload, Download, LogOut, Mail, Lock, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react';

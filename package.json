@@ -10,7 +10,12 @@
     "test": "vitest"
   },
   "dependencies": {
+    "@firebase/app": "^0.14.6",
+    "@firebase/auth": "^1.12.0",
+    "@firebase/firestore": "^4.9.3",
     "dexie": "^4.2.1",
+    "dotenv": "^17.2.3",
+    "firebase": "^12.7.0",
     "lucide-react": "^0.562.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3"
