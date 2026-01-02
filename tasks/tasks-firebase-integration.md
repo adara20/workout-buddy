@@ -44,6 +44,9 @@
 - [x] 3.5 **Local Commit:** `git commit -m "ui: add sync view and navigation"`
 
 ### 4.0 Final Verification
-- [ ] 4.1 **AI:** Perform manual end-to-end test with user `a@a.com`.
-- [ ] 4.2 **AI:** Run full regression suite (`npm test`).
-- [ ] 4.3 **Human:** Final review and approval for remote push.
+
+- [x] 4.1 **AI:** Perform manual end-to-end test with user `a@a.com`.
+
+- [x] 4.2 **AI:** Run full regression suite (`npm test`).
+
+- [x] 4.3 **Human:** Final review and approval for remote push.
