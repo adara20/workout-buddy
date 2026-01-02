@@ -10,12 +10,16 @@ export default defineConfig(({ mode }) => {
         host: '0.0.0.0',
       },
       plugins: [react()],
-      define: {
-        
+      optimizeDeps: {
+        include: ['firebase/app', 'firebase/auth', 'firebase/firestore'],
+      },
+      build: {
+        commonjsOptions: {
+          include: [/firebase/, /node_modules/],
+        },
       },
       resolve: {
         alias: {
-          '@': path.resolve(__dirname, '.'),
         }
       },
       test: {
