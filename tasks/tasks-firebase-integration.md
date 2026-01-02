@@ -31,10 +31,10 @@
 - [x] 1.3 **Local Commit:** `git commit -m "feat: add token retrieval to auth service"`
 
 ### 2.0 Implement REST Sync Service
-- [ ] 2.1 **AI:** Create `services/cloud-rest.ts` with `uploadToCloud` (`PUT`) and `downloadFromCloud` (`GET`) methods.
-- [ ] 2.2 **AI:** Implement data serialization: Convert Dexie tables to a single JSON object for backup.
-- [ ] 2.3 **AI:** **Verify & Test:** Create `services/cloud-rest.test.ts`. Mock `fetch`. Test large JSON payloads and 401 Unauthorized handling.
-- [ ] 2.4 **Local Commit:** `git commit -m "feat: implement manual REST sync service"`
+- [x] 2.1 **AI:** Create `services/cloud-rest.ts` with `uploadToCloud` (`PUT`) and `downloadFromCloud` (`GET`) methods.
+- [x] 2.2 **AI:** Implement data serialization: Convert Dexie tables to a single JSON object for backup.
+- [x] 2.3 **AI:** **Verify & Test:** Create `services/cloud-rest.test.ts`. Mock `fetch`. Test large JSON payloads and 401 Unauthorized handling.
+- [x] 2.4 **Local Commit:** `git commit -m "feat: implement manual REST sync service"`
 
 ### 3.0 Build Sync UI & Navigation
 - [ ] 3.1 **AI:** Create `views/Sync.tsx` with Login/Signup and Manual Sync buttons.
