@@ -31,3 +31,4 @@ TASKS.md
 generate-tasks.md
 generate-prd.md
 tasks/
+.env
