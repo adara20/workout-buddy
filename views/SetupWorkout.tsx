@@ -29,16 +29,17 @@ const SetupWorkout: React.FC<SetupWorkoutProps> = ({
   useEffect(() => {
     if (allPillars.length === 0) return;
 
+    const now = Date.now();
     let filtered = [...allPillars];
     if (selectedFocus) {
       // Prioritize focus but include others if needed
       filtered.sort((a, b) => {
         if (a.muscleGroup === selectedFocus && b.muscleGroup !== selectedFocus) return -1;
         if (a.muscleGroup !== selectedFocus && b.muscleGroup === selectedFocus) return 1;
-        return getOverdueScore(b) - getOverdueScore(a);
+        return getOverdueScore(b, now) - getOverdueScore(a, now);
       });
     } else {
-      filtered.sort((a, b) => getOverdueScore(b) - getOverdueScore(a));
+      filtered.sort((a, b) => getOverdueScore(b, now) - getOverdueScore(a, now));
     }
     setRecommendations(filtered.slice(0, numPillars));
   }, [allPillars, selectedFocus, numPillars]);

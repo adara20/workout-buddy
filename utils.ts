@@ -1,22 +1,21 @@
 
 import { Pillar } from './types';
 
-export function getDaysSince(timestamp: number | null): number {
+export function getDaysSince(timestamp: number | null, now = Date.now()): number {
   if (!timestamp) return 999;
-  const now = Date.now();
   const diff = now - timestamp;
   return Math.floor(diff / (1000 * 60 * 60 * 24));
 }
 
-export function getOverdueScore(pillar: Pillar): number {
-  const daysSince = getDaysSince(pillar.lastCountedAt);
+export function getOverdueScore(pillar: Pillar, now = Date.now()): number {
+  const daysSince = getDaysSince(pillar.lastCountedAt, now);
   return daysSince / pillar.cadenceDays;
 }
 
 export type StatusColor = 'green' | 'yellow' | 'red';
 
-export function getStatusColor(pillar: Pillar): StatusColor {
-  const score = getOverdueScore(pillar);
+export function getStatusColor(pillar: Pillar, now = Date.now()): StatusColor {
+  const score = getOverdueScore(pillar, now);
   if (score < 0.7) return 'green';
   if (score < 1.0) return 'yellow';
   return 'red';

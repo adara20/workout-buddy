@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '../db';
 import { Pillar } from '../types';
-import { getDaysSince, getStatusBg, getStatusColor } from '../utils';
+import { getDaysSince, getStatusBg, getStatusColor, getOverdueScore } from '../utils';
 import { Play, Dumbbell, AlertTriangle } from 'lucide-react';
 
 interface DashboardProps {
@@ -11,14 +11,15 @@ interface DashboardProps {
 
 const Dashboard: React.FC<DashboardProps> = ({ onStart }) => {
   const [pillars, setPillars] = useState<Pillar[]>([]);
+  const now = Date.now();
 
   useEffect(() => {
     db.pillars.toArray().then(setPillars);
   }, []);
 
   const sortedPillars = [...pillars].sort((a, b) => {
-    const scoreA = getDaysSince(a.lastCountedAt) / a.cadenceDays;
-    const scoreB = getDaysSince(b.lastCountedAt) / b.cadenceDays;
+    const scoreA = getOverdueScore(a, now);
+    const scoreB = getOverdueScore(b, now);
     return scoreB - scoreA;
   });
 
@@ -52,8 +53,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onStart }) => {
         <h3 className="text-gray-400 font-semibold uppercase text-xs tracking-wider mb-3">Pillar Status</h3>
         <div className="flex flex-col gap-3">
           {sortedPillars.map(p => {
-            const daysSince = getDaysSince(p.lastCountedAt);
-            const status = getStatusColor(p);
+            const daysSince = getDaysSince(p.lastCountedAt, now);
+            const status = getStatusColor(p, now);
             return (
               <div key={p.id} className="bg-gray-900 border border-gray-800 rounded-xl p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
