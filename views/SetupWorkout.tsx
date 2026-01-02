@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '../db';
 import { Pillar, MuscleGroup } from '../types';
-import { getOverdueScore } from '../utils';
+import { getRecommendedPillars } from '../services/recommendations';
 import { ChevronRight, X, Shuffle } from 'lucide-react';
 
 interface SetupWorkoutProps {
@@ -28,20 +28,9 @@ const SetupWorkout: React.FC<SetupWorkoutProps> = ({
 
   useEffect(() => {
     if (allPillars.length === 0) return;
-
     const now = Date.now();
-    let filtered = [...allPillars];
-    if (selectedFocus) {
-      // Prioritize focus but include others if needed
-      filtered.sort((a, b) => {
-        if (a.muscleGroup === selectedFocus && b.muscleGroup !== selectedFocus) return -1;
-        if (a.muscleGroup !== selectedFocus && b.muscleGroup === selectedFocus) return 1;
-        return getOverdueScore(b, now) - getOverdueScore(a, now);
-      });
-    } else {
-      filtered.sort((a, b) => getOverdueScore(b, now) - getOverdueScore(a, now));
-    }
-    setRecommendations(filtered.slice(0, numPillars));
+    const sorted = getRecommendedPillars(allPillars, selectedFocus, now);
+    setRecommendations(sorted.slice(0, numPillars));
   }, [allPillars, selectedFocus, numPillars]);
 
   const togglePillarSelection = (p: Pillar) => {
