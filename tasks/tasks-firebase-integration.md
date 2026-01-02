@@ -37,11 +37,11 @@
 - [x] 2.4 **Local Commit:** `git commit -m "feat: implement manual REST sync service"`
 
 ### 3.0 Build Sync UI & Navigation
-- [ ] 3.1 **AI:** Create `views/Sync.tsx` with Login/Signup and Manual Sync buttons.
-- [ ] 3.2 **AI:** Update `App.tsx` navigation.
-- [ ] 3.3 **AI:** Add loading states and success/error notifications for REST calls.
-- [ ] 3.4 **AI:** **Verify & Test:** Ensure navigation works and local history remains unaffected.
-- [ ] 3.5 **Local Commit:** `git commit -m "ui: add sync view and navigation"`
+- [x] 3.1 **AI:** Create `views/Sync.tsx` with Login/Signup and Manual Sync buttons.
+- [x] 3.2 **AI:** Update `App.tsx` navigation.
+- [x] 3.3 **AI:** Add loading states and success/error notifications for REST calls.
+- [x] 3.4 **AI:** **Verify & Test:** Ensure navigation works and local history remains unaffected.
+- [x] 3.5 **Local Commit:** `git commit -m "ui: add sync view and navigation"`
 
 ### 4.0 Final Verification
 - [ ] 4.1 **AI:** Perform manual end-to-end test with user `a@a.com`.

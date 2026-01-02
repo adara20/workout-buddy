@@ -8,9 +8,10 @@ import ActiveSession from './views/ActiveSession';
 import Summary from './views/Summary';
 import History from './views/History';
 import Settings from './views/Settings';
-import { Home, History as HistoryIcon, Settings as SettingsIcon, AlertCircle } from 'lucide-react';
+import Sync from './views/Sync';
+import { Home, History as HistoryIcon, Settings as SettingsIcon, AlertCircle, Cloud } from 'lucide-react';
 
-type View = 'dashboard' | 'setup' | 'session' | 'summary' | 'history' | 'settings';
+type View = 'dashboard' | 'setup' | 'session' | 'summary' | 'history' | 'settings' | 'sync';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>('dashboard');
@@ -90,6 +91,8 @@ const App: React.FC = () => {
         return <History />;
       case 'settings':
         return <Settings />;
+      case 'sync':
+        return <Sync />;
       default:
         return <Dashboard onStart={startSetup} />;
     }
@@ -113,6 +116,10 @@ const App: React.FC = () => {
         <button onClick={() => setCurrentView('dashboard')} className={`flex flex-col items-center gap-1 ${currentView === 'dashboard' || currentView === 'setup' || currentView === 'session' ? 'text-blue-500' : 'text-gray-400'}`}>
           <Home size={20} />
           <span className="text-xs">Home</span>
+        </button>
+        <button onClick={() => setCurrentView('sync')} className={`flex flex-col items-center gap-1 ${currentView === 'sync' ? 'text-blue-500' : 'text-gray-400'}`}>
+          <Cloud size={20} />
+          <span className="text-xs">Sync</span>
         </button>
         <button onClick={() => setCurrentView('history')} className={`flex flex-col items-center gap-1 ${currentView === 'history' ? 'text-blue-500' : 'text-gray-400'}`}>
           <HistoryIcon size={20} />
