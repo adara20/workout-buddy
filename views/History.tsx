@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { db } from '../db';
+import { repository } from '../services/repository';
 import { WorkoutSession } from '../types';
 import { Calendar, ChevronRight } from 'lucide-react';
 
@@ -8,7 +8,7 @@ const History: React.FC = () => {
   const [sessions, setSessions] = useState<WorkoutSession[]>([]);
 
   useEffect(() => {
-    db.sessions.orderBy('date').reverse().toArray().then(setSessions);
+    repository.getAllSessions().then(setSessions);
   }, []);
 
   return (

@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { db } from '../db';
+import { repository } from '../services/repository';
 import { Pillar } from '../types';
 import { getDaysSince, getStatusBg, getStatusColor, getOverdueScore } from '../utils';
 import { Play, Dumbbell, AlertTriangle } from 'lucide-react';
@@ -14,7 +14,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onStart }) => {
   const now = Date.now();
 
   useEffect(() => {
-    db.pillars.toArray().then(setPillars);
+    repository.getAllPillars().then(setPillars);
   }, []);
 
   const sortedPillars = [...pillars].sort((a, b) => {

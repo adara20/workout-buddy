@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { db } from '../db';
+import { repository } from '../services/repository';
 import { Pillar, MuscleGroup } from '../types';
 import { getRecommendedPillars } from '../services/recommendations';
 import { ChevronRight, X, Shuffle } from 'lucide-react';
@@ -23,7 +23,7 @@ const SetupWorkout: React.FC<SetupWorkoutProps> = ({
   const muscleGroups: MuscleGroup[] = ['Legs', 'Push', 'Pull', 'Core', 'Full Body', 'Conditioning'];
 
   useEffect(() => {
-    db.pillars.toArray().then(setAllPillars);
+    repository.getAllPillars().then(setAllPillars);
   }, []);
 
   useEffect(() => {

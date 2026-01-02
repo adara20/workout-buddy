@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { db } from '../db';
+import { repository } from '../services/repository';
 import { WorkoutSession, Accessory, Pillar, PillarEntry, AccessoryEntry } from '../types';
 import { calculatePillarEntryUpdate, calculatePillarUpdate } from '../services/session';
 import { X, CheckCircle2, TrendingUp, AlertCircle, Plus, Check } from 'lucide-react';
@@ -18,12 +18,12 @@ const ActiveSession: React.FC<ActiveSessionProps> = ({ initialSession, onComplet
   const [targetExercises, setTargetExercises] = useState(4);
 
   useEffect(() => {
-    db.accessories.toArray().then(setAllAccessories);
-    db.pillars.toArray().then(p => {
+    repository.getAllAccessories().then(setAllAccessories);
+    repository.getAllPillars().then(p => {
       const map = p.reduce((acc, curr) => ({ ...acc, [curr.id]: curr }), {});
       setPillarsData(map);
     });
-    db.config.get('main').then(cfg => cfg && setTargetExercises(cfg.targetExercisesPerSession));
+    repository.getConfig().then(cfg => cfg && setTargetExercises(cfg.targetExercisesPerSession));
   }, []);
 
   const updateWeight = (pillarId: string, delta: number) => {
@@ -61,10 +61,10 @@ const ActiveSession: React.FC<ActiveSessionProps> = ({ initialSession, onComplet
 
   const handleFinish = async () => {
     const now = Date.now();
-    // Transaction save
-    await db.transaction('rw', [db.sessions, db.pillars], async () => {
+    
+    await repository.runTransaction('rw', ['sessions', 'pillars'], async () => {
       // 1. Save Session
-      await db.sessions.add(session);
+      await repository.addSession(session);
       
       // 2. Update Pillar Stats
       for (const pEntry of session.pillarsPerformed) {
@@ -72,7 +72,7 @@ const ActiveSession: React.FC<ActiveSessionProps> = ({ initialSession, onComplet
         if (!pInfo) continue;
         
         const updates = calculatePillarUpdate(pEntry, now);
-        await db.pillars.update(pEntry.pillarId, updates);
+        await repository.updatePillar(pEntry.pillarId, updates);
       }
     });
     onComplete(session);

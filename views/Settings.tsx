@@ -1,6 +1,6 @@
-
 import React, { useEffect, useState } from 'react';
-import { db, initOnce } from '../db';
+import { repository } from '../services/repository';
+import { initOnce } from '../db';
 import { Pillar, AppConfig, ExportPayload } from '../types';
 import { Download, Upload, Trash2, Edit2, ShieldCheck, Database, Info, Wrench } from 'lucide-react';
 
@@ -28,33 +28,33 @@ const Settings: React.FC = () => {
   };
 
   const loadData = async () => {
-    const p = await db.pillars.toArray();
-    const c = await db.config.get('main');
-    const sCount = await db.sessions.count();
-    const aCount = await db.accessories.count();
+    const p = await repository.getAllPillars();
+    const c = await repository.getConfig();
+    const sCount = await repository.getSessionCount();
+    const aCount = await repository.getAccessoryCount();
     setPillars(p);
     setConfig(c || null);
     setStats({ sessions: sCount, pillars: p.length, accessories: aCount });
   };
 
-  const updateConfig = async (updates: Partial<AppConfig>) => {
+  const updateConfigState = async (updates: Partial<AppConfig>) => {
     if (!config) return;
     const newConfig = { ...config, ...updates };
-    await db.config.put(newConfig);
+    await repository.putConfig(newConfig);
     setConfig(newConfig);
   };
 
   const updatePillar = async (pillar: Pillar) => {
-    await db.pillars.put(pillar);
+    await repository.putPillar(pillar);
     setEditingPillar(null);
     loadData();
   };
 
   const exportData = async () => {
-    const pillars = await db.pillars.toArray();
-    const sessions = await db.sessions.toArray();
-    const accessories = await db.accessories.toArray();
-    const config = await db.config.get('main');
+    const pillars = await repository.getAllPillars();
+    const sessions = await repository.getAllSessions();
+    const accessories = await repository.getAllAccessories();
+    const config = await repository.getConfig();
     
     if (!config) return;
 
@@ -79,7 +79,7 @@ const Settings: React.FC = () => {
     a.download = `workout-buddy-backup-${new Date().toISOString().slice(0,10)}.json`;
     a.click();
     
-    await db.config.update('main', { lastExportAt: Date.now() });
+    await repository.updateConfig({ lastExportAt: Date.now() });
     loadData();
   };
 
@@ -97,20 +97,20 @@ const Settings: React.FC = () => {
 
         if (!confirm('OVERWRITE ALL LOCAL DATA? This cannot be undone.')) return;
 
-        await db.transaction('rw', [db.pillars, db.sessions, db.accessories, db.config], async () => {
+        await repository.runTransaction('rw', ['pillars', 'sessions', 'accessories', 'config'], async () => {
           const { pillars, sessions, accessories, config: importedConfig } = payload.data;
           
-          await db.pillars.clear();
-          await db.pillars.bulkPut(pillars);
+          await repository.clearPillars();
+          await repository.bulkPutPillars(pillars);
           
-          await db.sessions.clear();
-          await db.sessions.bulkPut(sessions);
+          await repository.clearSessions();
+          await repository.bulkPutSessions(sessions);
           
-          await db.accessories.clear();
-          await db.accessories.bulkPut(accessories);
+          await repository.clearAccessories();
+          await repository.bulkPutAccessories(accessories);
           
           if (importedConfig) {
-             await db.config.put({
+             await repository.putConfig({
                ...importedConfig,
                id: 'main' // Ensure constant ID
              });
@@ -171,14 +171,14 @@ const Settings: React.FC = () => {
           <label className="text-sm">Target Exercises / Session</label>
           <div className="flex items-center gap-3">
             <button 
-              onClick={() => updateConfig({ targetExercisesPerSession: Math.max(1, (config?.targetExercisesPerSession || 4) - 1) })}
+              onClick={() => updateConfigState({ targetExercisesPerSession: Math.max(1, (config?.targetExercisesPerSession || 4) - 1) })}
               className="w-8 h-8 bg-gray-800 rounded flex items-center justify-center text-gray-400 active:scale-90 transition-transform"
             >
               -
             </button>
             <span className="font-bold w-4 text-center">{config?.targetExercisesPerSession}</span>
             <button 
-              onClick={() => updateConfig({ targetExercisesPerSession: (config?.targetExercisesPerSession || 4) + 1 })}
+              onClick={() => updateConfigState({ targetExercisesPerSession: (config?.targetExercisesPerSession || 4) + 1 })}
               className="w-8 h-8 bg-gray-800 rounded flex items-center justify-center text-gray-400 active:scale-90 transition-transform"
             >
               +
@@ -257,7 +257,7 @@ const Settings: React.FC = () => {
           <button 
             onClick={async () => {
               if(confirm('Wipe everything? This action cannot be undone.')) {
-                await db.delete();
+                await repository.deleteDatabase();
                 window.location.reload();
               }
             }}

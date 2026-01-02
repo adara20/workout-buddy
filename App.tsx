@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { db, initOnce } from './db';
+import { initOnce } from './db';
+import { repository } from './services/repository';
 import { WorkoutSession, Pillar, AppConfig } from './types';
 import Dashboard from './views/Dashboard';
 import SetupWorkout from './views/SetupWorkout';
@@ -22,7 +23,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     initOnce().then(async () => {
-      const cfg = await db.config.get('main');
+      const cfg = await repository.getConfig();
       setConfig(cfg || null);
       setInitialized(true);
     });
