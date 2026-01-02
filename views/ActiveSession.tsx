@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../db';
 import { WorkoutSession, Accessory, Pillar, PillarEntry, AccessoryEntry } from '../types';
+import { calculatePillarEntryUpdate, calculatePillarUpdate } from '../services/session';
 import { X, CheckCircle2, TrendingUp, AlertCircle, Plus, Check } from 'lucide-react';
 
 interface ActiveSessionProps {
@@ -29,12 +30,7 @@ const ActiveSession: React.FC<ActiveSessionProps> = ({ initialSession, onComplet
     setSession(prev => {
       const updatedPillars = prev.pillarsPerformed.map(p => {
         if (p.pillarId === pillarId) {
-          const newWeight = Math.max(0, p.weight + delta);
-          const pillarInfo = pillarsData[pillarId];
-          const counted = pillarInfo ? newWeight >= pillarInfo.minWorkingWeight : false;
-          const warning = pillarInfo ? newWeight < pillarInfo.regressionFloorWeight : false;
-          const isPR = pillarInfo ? newWeight > pillarInfo.prWeight : false;
-          return { ...p, weight: newWeight, counted, isPR, warning };
+          return calculatePillarEntryUpdate(p, pillarsData[pillarId], delta);
         }
         return p;
       });
@@ -64,6 +60,7 @@ const ActiveSession: React.FC<ActiveSessionProps> = ({ initialSession, onComplet
   };
 
   const handleFinish = async () => {
+    const now = Date.now();
     // Transaction save
     await db.transaction('rw', [db.sessions, db.pillars], async () => {
       // 1. Save Session
@@ -74,18 +71,7 @@ const ActiveSession: React.FC<ActiveSessionProps> = ({ initialSession, onComplet
         const pInfo = pillarsData[pEntry.pillarId];
         if (!pInfo) continue;
         
-        const updates: Partial<Pillar> = {
-          lastLoggedAt: Date.now(),
-        };
-        
-        if (pEntry.counted) {
-          updates.lastCountedAt = Date.now();
-        }
-        
-        if (pEntry.isPR) {
-          updates.prWeight = pEntry.weight;
-        }
-        
+        const updates = calculatePillarUpdate(pEntry, now);
         await db.pillars.update(pEntry.pillarId, updates);
       }
     });
