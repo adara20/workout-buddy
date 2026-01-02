@@ -81,7 +81,13 @@ export async function downloadFromCloud(): Promise<boolean> {
     }
     if (data.sessions) {
       await repository.clearSessions();
-      await repository.bulkPutSessions(data.sessions);
+      // Restore empty arrays that Firebase RTDB strips
+      const sanitizedSessions = data.sessions.map(s => ({
+        ...s,
+        pillarsPerformed: s.pillarsPerformed || [],
+        accessoriesPerformed: s.accessoriesPerformed || []
+      }));
+      await repository.bulkPutSessions(sanitizedSessions);
     }
     if (data.config) {
       // Ensure we preserve the local 'main' ID for config

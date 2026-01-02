@@ -97,6 +97,30 @@ describe('Cloud REST Service', () => {
       }));
     });
 
+    it('sanitizes sessions by restoring missing arrays', async () => {
+      const mockCloudData = {
+        sessions: [
+          { date: 123 } // Missing pillarsPerformed and accessoriesPerformed
+        ],
+        updatedAt: 999
+      };
+
+      (global.fetch as any).mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(mockCloudData)
+      });
+
+      await downloadFromCloud();
+
+      expect(repository.bulkPutSessions).toHaveBeenCalledWith([
+        expect.objectContaining({
+          date: 123,
+          pillarsPerformed: [],
+          accessoriesPerformed: []
+        })
+      ]);
+    });
+
     it('returns false if no data exists in cloud', async () => {
       (global.fetch as any).mockResolvedValue({
         ok: true,

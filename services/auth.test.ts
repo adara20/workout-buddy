@@ -1,23 +1,27 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { signUp, signIn, signOut, getToken } from './auth';
-import { 
-  createUserWithEmailAndPassword, 
-  signInWithEmailAndPassword, 
-  signOut as firebaseSignOut 
-} from 'firebase/auth';
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut as firebaseSignOut
+} from '@firebase/auth';
 import { auth } from './firebase-config';
 
-vi.mock('firebase/auth', () => ({
-  getAuth: vi.fn(),
-  createUserWithEmailAndPassword: vi.fn(),
-  signInWithEmailAndPassword: vi.fn(),
-  signOut: vi.fn(),
-  onAuthStateChanged: vi.fn()
-}));
+vi.mock('@firebase/auth', () => {
+  return {
+    getAuth: vi.fn(),
+    createUserWithEmailAndPassword: vi.fn().mockResolvedValue({}),
+    signInWithEmailAndPassword: vi.fn().mockResolvedValue({}),
+    signOut: vi.fn().mockResolvedValue({}),
+    onAuthStateChanged: vi.fn()
+  };
+});
 
 vi.mock('./firebase-config', () => ({
   auth: {
-    currentUser: null
+    currentUser: null,
+    // Add internal property to satisfy SDK
+    _getRecaptchaConfig: vi.fn()
   }
 }));
 
@@ -26,7 +30,6 @@ describe('Auth Service', () => {
     vi.clearAllMocks();
     (auth as any).currentUser = null;
   });
-
   it('calls createUserWithEmailAndPassword on signUp', async () => {
     await signUp('test@example.com', 'password123');
     expect(createUserWithEmailAndPassword).toHaveBeenCalledWith(expect.anything(), 'test@example.com', 'password123');

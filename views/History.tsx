@@ -32,12 +32,12 @@ const History: React.FC = () => {
                   {new Date(s.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                 </p>
                 <div className="flex flex-wrap gap-1">
-                  {s.pillarsPerformed.map(p => (
+                  {(s.pillarsPerformed || []).map(p => (
                     <span key={p.pillarId} className="text-[9px] bg-gray-800 text-gray-400 px-1.5 py-0.5 rounded border border-gray-700">
                       {p.name}
                     </span>
                   ))}
-                  {s.accessoriesPerformed.map(a => (
+                  {(s.accessoriesPerformed || []).map(a => (
                     <span key={a.accessoryId} className="text-[9px] bg-blue-500/10 text-blue-400 px-1.5 py-0.5 rounded border border-blue-500/20">
                       {a.name}
                     </span>
