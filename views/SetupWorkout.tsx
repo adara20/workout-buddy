@@ -42,7 +42,7 @@ const SetupWorkout: React.FC<SetupWorkoutProps> = ({
   };
 
   return (
-    <div className="p-4 max-w-lg mx-auto flex flex-col gap-6 pb-32">
+    <div className="p-4 max-w-lg mx-auto flex flex-col gap-6 pb-40">
       <header className="flex items-center justify-between">
         <button onClick={onCancel} className="text-gray-400 p-2"><X /></button>
         <h2 className="text-xl font-bold">Setup Session</h2>

@@ -129,8 +129,10 @@ const App: React.FC = () => {
     }
   };
 
+  const showNav = currentView !== 'setup' && currentView !== 'session';
+
   return (
-    <div className="flex flex-col min-h-screen bg-gray-950 pb-20">
+    <div className={`flex flex-col min-h-screen bg-gray-950 ${showNav ? 'pb-20' : ''}`}>
       {config && !config.storagePersisted && currentView === 'dashboard' && (
         <div className="bg-yellow-500/10 border-b border-yellow-500/20 px-4 py-2 flex items-center gap-2">
           <AlertCircle size={14} className="text-yellow-500 shrink-0" />
@@ -143,24 +145,26 @@ const App: React.FC = () => {
         {renderView()}
       </main>
       
-      <nav className="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800 flex justify-around p-3 z-50">
-        <button onClick={() => setCurrentView('dashboard')} className={`flex flex-col items-center gap-1 ${currentView === 'dashboard' || currentView === 'setup' || currentView === 'session' ? 'text-blue-500' : 'text-gray-400'}`}>
-          <Home size={20} />
-          <span className="text-xs">Home</span>
-        </button>
-        <button onClick={() => setCurrentView('sync')} className={`flex flex-col items-center gap-1 ${currentView === 'sync' ? 'text-blue-500' : 'text-gray-400'}`}>
-          <Cloud size={20} />
-          <span className="text-xs">Sync</span>
-        </button>
-        <button onClick={() => setCurrentView('history')} className={`flex flex-col items-center gap-1 ${currentView === 'history' ? 'text-blue-500' : 'text-gray-400'}`}>
-          <HistoryIcon size={20} />
-          <span className="text-xs">History</span>
-        </button>
-        <button onClick={() => setCurrentView('settings')} className={`flex flex-col items-center gap-1 ${currentView === 'settings' ? 'text-blue-500' : 'text-gray-400'}`}>
-          <SettingsIcon size={20} />
-          <span className="text-xs">Settings</span>
-        </button>
-      </nav>
+      {currentView !== 'setup' && currentView !== 'session' && (
+        <nav className="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800 flex justify-around p-3 z-50">
+          <button onClick={() => setCurrentView('dashboard')} className={`flex flex-col items-center gap-1 ${currentView === 'dashboard' || currentView === 'summary' ? 'text-blue-500' : 'text-gray-400'}`}>
+            <Home size={20} />
+            <span className="text-xs">Home</span>
+          </button>
+          <button onClick={() => setCurrentView('sync')} className={`flex flex-col items-center gap-1 ${currentView === 'sync' ? 'text-blue-500' : 'text-gray-400'}`}>
+            <Cloud size={20} />
+            <span className="text-xs">Sync</span>
+          </button>
+          <button onClick={() => setCurrentView('history')} className={`flex flex-col items-center gap-1 ${currentView === 'history' ? 'text-blue-500' : 'text-gray-400'}`}>
+            <HistoryIcon size={20} />
+            <span className="text-xs">History</span>
+          </button>
+          <button onClick={() => setCurrentView('settings')} className={`flex flex-col items-center gap-1 ${currentView === 'settings' ? 'text-blue-500' : 'text-gray-400'}`}>
+            <SettingsIcon size={20} />
+            <span className="text-xs">Settings</span>
+          </button>
+        </nav>
+      )}
     </div>
   );
 };
