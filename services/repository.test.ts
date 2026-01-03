@@ -92,4 +92,55 @@ describe('repository history extensions', () => {
     expect(active.some(p => p.id === 'legacy-p')).toBe(true);
     await repository.clearPillars();
   });
+
+  it('recalculates PR and timestamps when sessions are deleted', async () => {
+    const pId = 'calc-test';
+    await repository.putPillar({
+      id: pId,
+      name: 'Calc Test',
+      muscleGroup: 'Push',
+      cadenceDays: 5,
+      minWorkingWeight: 10,
+      regressionFloorWeight: 5,
+      prWeight: 0,
+      lastCountedAt: null,
+      lastLoggedAt: null
+    });
+
+    // 1. First session: 100 lbs (Sets PR)
+    const s1Id = await repository.addSession({
+      date: 1000,
+      pillarsPerformed: [{ pillarId: pId, name: 'P', weight: 100, counted: true, isPR: true, warning: false }],
+      accessoriesPerformed: []
+    });
+
+    // 2. Second session: 150 lbs (New PR)
+    const s2Id = await repository.addSession({
+      date: 2000,
+      pillarsPerformed: [{ pillarId: pId, name: 'P', weight: 150, counted: true, isPR: true, warning: false }],
+      accessoriesPerformed: []
+    });
+
+    let pillar = await repository.getPillarById(pId);
+    expect(pillar?.prWeight).toBe(150);
+    expect(pillar?.lastLoggedAt).toBe(2000);
+
+    // 3. Delete the 150 lbs session
+    await repository.deleteSession(s2Id);
+
+    // 4. Verify PR rolled back to 100 lbs
+    pillar = await repository.getPillarById(pId);
+    expect(pillar?.prWeight).toBe(100);
+    expect(pillar?.lastLoggedAt).toBe(1000);
+
+    // 5. Delete the 100 lbs session
+    await repository.deleteSession(s1Id);
+
+    // 6. Verify stats are reset
+    pillar = await repository.getPillarById(pId);
+    expect(pillar?.prWeight).toBe(0);
+    expect(pillar?.lastLoggedAt).toBe(null);
+
+    await repository.clearPillars();
+  });
 });
