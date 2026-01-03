@@ -11,6 +11,7 @@ export interface Pillar {
   prWeight: number;
   lastCountedAt: number | null; // Timestamp (epoch ms)
   lastLoggedAt: number | null;  // Timestamp (epoch ms)
+  isActive?: boolean;
 }
 
 export interface Accessory {

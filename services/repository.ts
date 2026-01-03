@@ -19,6 +19,19 @@ export class Repository {
   async getAllPillars(): Promise<Pillar[]> {
     return db.pillars.toArray();
   }
+  async getActivePillars(): Promise<Pillar[]> {
+    // Treat undefined or true as active
+    return db.pillars.filter(p => p.isActive !== false).toArray();
+  }
+  async archivePillar(id: string): Promise<void> {
+    await db.pillars.update(id, { isActive: false });
+    this.notifyChange();
+  }
+  async restorePillar(id: string): Promise<void> {
+    // We explicitly set it to true now that the user has interacted with it
+    await db.pillars.update(id, { isActive: true });
+    this.notifyChange();
+  }
   async getPillarById(id: string): Promise<Pillar | undefined> {
     return db.pillars.get(id);
   }
@@ -29,6 +42,7 @@ export class Repository {
   }
   async putPillar(pillar: Pillar): Promise<string> {
     if (!pillar.id) pillar.id = generateUUID();
+    if (pillar.isActive === undefined) pillar.isActive = true;
     const res = await db.pillars.put(pillar);
     this.notifyChange();
     return res;
@@ -67,17 +81,89 @@ export class Repository {
   async addSession(session: WorkoutSession): Promise<string> {
     if (!session.id) session.id = generateUUID();
     await db.table('workout_sessions').put(session);
+    
+    // Auto-update pillar stats based on the new session
+    const pillarIds = session.pillarsPerformed.map(p => p.pillarId);
+    if (pillarIds.length > 0) {
+      await this.recalculatePillarStats(pillarIds);
+    }
+
     this.notifyChange();
     return session.id;
   }
   async updateSession(id: string, updates: Partial<WorkoutSession>): Promise<number> {
+    const oldSession = await db.table('workout_sessions').get(id);
     const res = await db.table('workout_sessions').update(id, updates);
+    
+    // Gather all unique pillar IDs affected by this change
+    const affectedPillars = new Set<string>();
+    if (oldSession) {
+      oldSession.pillarsPerformed.forEach((p: any) => affectedPillars.add(p.pillarId));
+    }
+    if (updates.pillarsPerformed) {
+      updates.pillarsPerformed.forEach((p: any) => affectedPillars.add(p.pillarId));
+    }
+
+    if (affectedPillars.size > 0) {
+      await this.recalculatePillarStats(Array.from(affectedPillars));
+    }
+
     this.notifyChange();
     return res;
   }
   async deleteSession(id: string): Promise<void> {
+    const session = await db.table('workout_sessions').get(id);
+    if (!session) return;
+
     await db.table('workout_sessions').delete(id);
+    
+    // Recalculate stats for all pillars that were in this session
+    const pillarIds = session.pillarsPerformed.map((p: any) => p.pillarId);
+    if (pillarIds.length > 0) {
+      await this.recalculatePillarStats(pillarIds);
+    }
+    
     this.notifyChange();
+  }
+
+  /**
+   * Recalculates PRs and timestamps for specific pillars by scanning all history.
+   */
+  private async recalculatePillarStats(pillarIds: string[]): Promise<void> {
+    for (const pillarId of pillarIds) {
+      // Find all sessions containing this pillar
+      const sessions = await db.table('workout_sessions')
+        .filter((s: WorkoutSession) => s.pillarsPerformed.some(p => p.pillarId === pillarId))
+        .toArray();
+
+      let maxWeight = 0;
+      let lastLoggedAt: number | null = null;
+      let lastCountedAt: number | null = null;
+
+      for (const s of sessions) {
+        const entry = s.pillarsPerformed.find(p => p.pillarId === pillarId);
+        if (!entry) continue;
+
+        if (entry.weight > maxWeight) {
+          maxWeight = entry.weight;
+        }
+
+        if (!lastLoggedAt || s.date > lastLoggedAt) {
+          lastLoggedAt = s.date;
+        }
+
+        if (entry.counted && (!lastCountedAt || s.date > lastCountedAt)) {
+          lastCountedAt = s.date;
+        }
+      }
+
+      // Update the pillar with fresh stats from history
+      await db.pillars.update(pillarId, {
+        prWeight: maxWeight,
+        lastLoggedAt: lastLoggedAt,
+        lastCountedAt: lastCountedAt
+      });
+    }
   }
   async getSessionsByPillar(pillarId: string): Promise<WorkoutSession[]> {
     return db.table('workout_sessions').filter(s => 
