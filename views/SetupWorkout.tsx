@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { repository } from '../services/repository';
 import { Pillar, MuscleGroup } from '../types';
 import { getRecommendedPillars } from '../services/recommendations';
-import { ChevronRight, X, Shuffle, Calendar } from 'lucide-react';
+import { ChevronRight, X, Calendar } from 'lucide-react';
 
 interface SetupWorkoutProps {
   onCancel: () => void;
@@ -121,12 +121,6 @@ const SetupWorkout: React.FC<SetupWorkoutProps> = ({
 
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-gray-950 via-gray-950 to-transparent">
         <div className="max-w-lg mx-auto flex flex-col gap-3">
-          <button
-            onClick={() => onStart([], new Date(customDate).getTime())}
-            className="flex items-center justify-center gap-2 text-gray-500 hover:text-white py-2 transition-colors text-xs font-bold uppercase tracking-widest"
-          >
-            <Shuffle size={14} /> Random Untracked Day
-          </button>
           <button
             disabled={recommendations.length === 0}
             onClick={() => onStart(recommendations, new Date(customDate).getTime())}
