@@ -65,9 +65,9 @@ const App: React.FC = () => {
 
   const startSetup = () => setCurrentView('setup');
   
-  const startSession = (pillars: Pillar[]) => {
+  const startSession = (pillars: Pillar[], date?: number) => {
     const session: Partial<WorkoutSession> = {
-      date: Date.now(),
+      date: date || Date.now(),
       pillarsPerformed: pillars.map(p => ({
         pillarId: p.id,
         name: p.name,
