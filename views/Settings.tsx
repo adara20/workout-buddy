@@ -97,7 +97,7 @@ const Settings: React.FC = () => {
 
         if (!confirm('OVERWRITE ALL LOCAL DATA? This cannot be undone.')) return;
 
-        await repository.runTransaction('rw', ['pillars', 'sessions', 'accessories', 'config'], async () => {
+        await repository.runTransaction('rw', ['pillars', 'workout_sessions', 'accessories', 'config'], async () => {
           const { pillars, sessions, accessories, config: importedConfig } = payload.data;
           
           await repository.clearPillars();

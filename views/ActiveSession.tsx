@@ -62,7 +62,7 @@ const ActiveSession: React.FC<ActiveSessionProps> = ({ initialSession, onComplet
   const handleFinish = async () => {
     const now = Date.now();
     
-    await repository.runTransaction('rw', ['sessions', 'pillars'], async () => {
+    await repository.runTransaction('rw', ['workout_sessions', 'pillars'], async () => {
       // 1. Save Session
       await repository.addSession(session);
       

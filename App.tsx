@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { initOnce } from './db';
 import { repository } from './services/repository';
+import { uploadToCloud } from './services/cloud-rest';
 import { WorkoutSession, Pillar, AppConfig } from './types';
 import Dashboard from './views/Dashboard';
 import SetupWorkout from './views/SetupWorkout';
@@ -21,14 +22,44 @@ const App: React.FC = () => {
   const [numPillars, setNumPillars] = useState(2);
   const [config, setConfig] = useState<AppConfig | null>(null);
   const [initialized, setInitialized] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     initOnce().then(async () => {
       const cfg = await repository.getConfig();
       setConfig(cfg || null);
+      
+      // Register automatic sync listener
+      repository.setSyncListener(async () => {
+        try {
+          await uploadToCloud();
+        } catch (err) {
+          console.warn('Auto-sync skipped:', err instanceof Error ? err.message : err);
+        }
+      });
+
       setInitialized(true);
+    }).catch(err => {
+      console.error("Database initialization failed:", err);
+      setError(err instanceof Error ? err.message : String(err));
     });
   }, []);
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white p-6 text-center">
+        <AlertCircle size={48} className="text-red-500 mb-4" />
+        <h1 className="text-xl font-bold mb-2">Database Error</h1>
+        <p className="text-gray-400 font-mono text-sm max-w-md">{error}</p>
+        <button 
+          onClick={() => window.location.reload()} 
+          className="mt-6 px-4 py-2 bg-blue-600 rounded-lg font-bold"
+        >
+          RETRY
+        </button>
+      </div>
+    );
+  }
 
   if (!initialized) return <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white font-mono">LOADING_DB...</div>;
 
