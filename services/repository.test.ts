@@ -45,4 +45,51 @@ describe('repository history extensions', () => {
 
     await repository.clearSessions();
   });
+
+  it('can archive and restore a pillar', async () => {
+    const pillarId = 'archive-test';
+    await repository.putPillar({
+      id: pillarId,
+      name: 'Archive Test',
+      muscleGroup: 'Push',
+      cadenceDays: 5,
+      minWorkingWeight: 10,
+      regressionFloorWeight: 5,
+      prWeight: 0,
+      lastCountedAt: null,
+      lastLoggedAt: null
+    });
+
+    const initial = await repository.getPillarById(pillarId);
+    expect(initial?.isActive).toBe(true);
+
+    await repository.archivePillar(pillarId);
+    const archived = await repository.getPillarById(pillarId);
+    expect(archived?.isActive).toBe(false);
+
+    await repository.restorePillar(pillarId);
+    const restored = await repository.getPillarById(pillarId);
+    expect(restored?.isActive).toBe(true);
+
+    await repository.clearPillars();
+  });
+
+  it('treats undefined isActive as active', async () => {
+    await repository.putPillar({
+      id: 'legacy-p',
+      name: 'Legacy Pillar',
+      muscleGroup: 'Push',
+      cadenceDays: 5,
+      minWorkingWeight: 10,
+      regressionFloorWeight: 5,
+      prWeight: 0,
+      lastCountedAt: null,
+      lastLoggedAt: null,
+      isActive: undefined // Force undefined
+    });
+
+    const active = await repository.getActivePillars();
+    expect(active.some(p => p.id === 'legacy-p')).toBe(true);
+    await repository.clearPillars();
+  });
 });

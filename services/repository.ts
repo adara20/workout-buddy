@@ -19,6 +19,19 @@ export class Repository {
   async getAllPillars(): Promise<Pillar[]> {
     return db.pillars.toArray();
   }
+  async getActivePillars(): Promise<Pillar[]> {
+    // Treat undefined or true as active
+    return db.pillars.filter(p => p.isActive !== false).toArray();
+  }
+  async archivePillar(id: string): Promise<void> {
+    await db.pillars.update(id, { isActive: false });
+    this.notifyChange();
+  }
+  async restorePillar(id: string): Promise<void> {
+    // We explicitly set it to true now that the user has interacted with it
+    await db.pillars.update(id, { isActive: true });
+    this.notifyChange();
+  }
   async getPillarById(id: string): Promise<Pillar | undefined> {
     return db.pillars.get(id);
   }
@@ -29,6 +42,7 @@ export class Repository {
   }
   async putPillar(pillar: Pillar): Promise<string> {
     if (!pillar.id) pillar.id = generateUUID();
+    if (pillar.isActive === undefined) pillar.isActive = true;
     const res = await db.pillars.put(pillar);
     this.notifyChange();
     return res;

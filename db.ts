@@ -77,6 +77,11 @@ export class WorkoutDatabase extends Dexie {
     this.version(4).stores({
       sessions: null
     });
+
+    // v5: Add isActive field to pillars
+    this.version(5).stores({
+      pillars: 'id, name, muscleGroup, lastCountedAt, lastLoggedAt, isActive'
+    });
   }
 
   // Convenience getter to use 'sessions' name in code but point to 'workout_sessions'
@@ -100,12 +105,12 @@ function mapLegacyPillarNameToId(name: string): string {
 }
 
 const CANONICAL_PILLARS: Pillar[] = [
-  { id: 'back_squat', name: 'Back Squat', muscleGroup: 'Legs', cadenceDays: 10, minWorkingWeight: 135, regressionFloorWeight: 115, prWeight: 0, lastCountedAt: null, lastLoggedAt: null },
-  { id: 'bench_press', name: 'Bench Press', muscleGroup: 'Push', cadenceDays: 7, minWorkingWeight: 95, regressionFloorWeight: 75, prWeight: 0, lastCountedAt: null, lastLoggedAt: null },
-  { id: 'pull_ups', name: 'Pull-Ups', muscleGroup: 'Pull', cadenceDays: 5, minWorkingWeight: 0, regressionFloorWeight: 0, prWeight: 0, lastCountedAt: null, lastLoggedAt: null },
-  { id: 'rdl', name: 'Romanian Deadlift', muscleGroup: 'Legs', cadenceDays: 10, minWorkingWeight: 115, regressionFloorWeight: 95, prWeight: 0, lastCountedAt: null, lastLoggedAt: null },
-  { id: 'walking_lunge', name: 'Walking Lunge', muscleGroup: 'Legs', cadenceDays: 7, minWorkingWeight: 40, regressionFloorWeight: 30, prWeight: 0, lastCountedAt: null, lastLoggedAt: null },
-  { id: 'farmers_carry', name: 'Farmer’s Carry', muscleGroup: 'Conditioning', cadenceDays: 7, minWorkingWeight: 50, regressionFloorWeight: 40, prWeight: 0, lastCountedAt: null, lastLoggedAt: null }
+  { id: 'back_squat', name: 'Back Squat', muscleGroup: 'Legs', cadenceDays: 10, minWorkingWeight: 135, regressionFloorWeight: 115, prWeight: 0, lastCountedAt: null, lastLoggedAt: null, isActive: true },
+  { id: 'bench_press', name: 'Bench Press', muscleGroup: 'Push', cadenceDays: 7, minWorkingWeight: 95, regressionFloorWeight: 75, prWeight: 0, lastCountedAt: null, lastLoggedAt: null, isActive: true },
+  { id: 'pull_ups', name: 'Pull-Ups', muscleGroup: 'Pull', cadenceDays: 5, minWorkingWeight: 0, regressionFloorWeight: 0, prWeight: 0, lastCountedAt: null, lastLoggedAt: null, isActive: true },
+  { id: 'rdl', name: 'Romanian Deadlift', muscleGroup: 'Legs', cadenceDays: 10, minWorkingWeight: 115, regressionFloorWeight: 95, prWeight: 0, lastCountedAt: null, lastLoggedAt: null, isActive: true },
+  { id: 'walking_lunge', name: 'Walking Lunge', muscleGroup: 'Legs', cadenceDays: 7, minWorkingWeight: 40, regressionFloorWeight: 30, prWeight: 0, lastCountedAt: null, lastLoggedAt: null, isActive: true },
+  { id: 'farmers_carry', name: 'Farmer’s Carry', muscleGroup: 'Conditioning', cadenceDays: 7, minWorkingWeight: 50, regressionFloorWeight: 40, prWeight: 0, lastCountedAt: null, lastLoggedAt: null, isActive: true }
 ];
 
 const CANONICAL_ACCESSORIES: Accessory[] = [
