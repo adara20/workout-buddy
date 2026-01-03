@@ -143,4 +143,89 @@ describe('repository history extensions', () => {
 
     await repository.clearPillars();
   });
+
+  it('recalculates PR correctly when session weights are updated', async () => {
+    const pId = 'update-weight-test';
+    await repository.putPillar({
+      id: pId,
+      name: 'Weight Test',
+      muscleGroup: 'Push',
+      cadenceDays: 5,
+      minWorkingWeight: 10,
+      regressionFloorWeight: 5,
+      prWeight: 0,
+      lastCountedAt: null,
+      lastLoggedAt: null
+    });
+
+    const sId = await repository.addSession({
+      date: 1000,
+      pillarsPerformed: [{ pillarId: pId, name: 'P', weight: 100, counted: true, isPR: true, warning: false }],
+      accessoriesPerformed: []
+    });
+
+    let pillar = await repository.getPillarById(pId);
+    expect(pillar?.prWeight).toBe(100);
+
+    // Update weight from 100 to 120
+    await repository.updateSession(sId, {
+      pillarsPerformed: [{ pillarId: pId, name: 'P', weight: 120, counted: true, isPR: true, warning: false }]
+    });
+
+    pillar = await repository.getPillarById(pId);
+    expect(pillar?.prWeight).toBe(120);
+
+    // Update weight from 120 down to 80
+    await repository.updateSession(sId, {
+      pillarsPerformed: [{ pillarId: pId, name: 'P', weight: 80, counted: true, isPR: false, warning: false }]
+    });
+
+    pillar = await repository.getPillarById(pId);
+    expect(pillar?.prWeight).toBe(80);
+
+    await repository.clearPillars();
+    await repository.clearSessions();
+  });
+
+  it('recalculates latest date correctly when session dates are updated', async () => {
+    const pId = 'update-date-test';
+    await repository.putPillar({
+      id: pId,
+      name: 'Date Test',
+      muscleGroup: 'Push',
+      cadenceDays: 5,
+      minWorkingWeight: 10,
+      regressionFloorWeight: 5,
+      prWeight: 0,
+      lastCountedAt: null,
+      lastLoggedAt: null
+    });
+
+    const sId = await repository.addSession({
+      date: 5000,
+      pillarsPerformed: [{ pillarId: pId, name: 'P', weight: 100, counted: true, isPR: true, warning: false }],
+      accessoriesPerformed: []
+    });
+
+    let pillar = await repository.getPillarById(pId);
+    expect(pillar?.lastLoggedAt).toBe(5000);
+
+    // Update date to be earlier
+    await repository.updateSession(sId, { date: 3000 });
+    pillar = await repository.getPillarById(pId);
+    expect(pillar?.lastLoggedAt).toBe(3000);
+
+    // Add a second, later session
+    await repository.addSession({
+      date: 7000,
+      pillarsPerformed: [{ pillarId: pId, name: 'P', weight: 100, counted: true, isPR: true, warning: false }],
+      accessoriesPerformed: []
+    });
+
+    pillar = await repository.getPillarById(pId);
+    expect(pillar?.lastLoggedAt).toBe(7000);
+
+    await repository.clearPillars();
+    await repository.clearSessions();
+  });
 });

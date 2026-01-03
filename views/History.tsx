@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { repository } from '../services/repository';
 import { WorkoutSession } from '../types';
-import { Calendar, Trash2, Edit2 } from 'lucide-react';
+import { Calendar, Trash2, Edit2, Check } from 'lucide-react';
 
 const History: React.FC = () => {
   const [sessions, setSessions] = useState<WorkoutSession[]>([]);
@@ -104,9 +104,9 @@ const History: React.FC = () => {
                 <div className="flex items-center gap-1 shrink-0">
                   <button 
                     onClick={() => setEditingSession(editingSession === s.id ? null : s.id)}
-                    className={`p-2 transition-all rounded-lg ${editingSession === s.id ? 'bg-blue-600 text-white' : 'text-gray-500 hover:text-blue-400 active:scale-90'}`}
+                    className={`p-2 transition-all rounded-lg ${editingSession === s.id ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40' : 'text-gray-500 hover:text-blue-400 active:scale-90'}`}
                   >
-                    <Edit2 size={16} />
+                    {editingSession === s.id ? <Check size={16} /> : <Edit2 size={16} />}
                   </button>
                   <button 
                     onClick={() => s.id && handleDelete(s.id)}
