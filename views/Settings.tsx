@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { repository } from '../services/repository';
 import { initOnce } from '../db';
 import { Pillar, AppConfig, ExportPayload } from '../types';
-import { Download, Upload, Trash2, Edit2, ShieldCheck, Database, Info, Wrench, Archive, RotateCcw } from 'lucide-react';
+import { Download, Upload, Trash2, Edit2, ShieldCheck, Database, Info, Wrench, Archive, RotateCcw, Plus } from 'lucide-react';
 
 const APP_VERSION = "2.1.0";
 
@@ -11,6 +11,9 @@ const Settings: React.FC = () => {
   const [showArchived, setShowArchived] = useState(false);
   const [config, setConfig] = useState<AppConfig | null>(null);
   const [editingPillar, setEditingPillar] = useState<string | null>(null);
+  const [addingPillar, setAddingPillar] = useState(false);
+  const [addingAccessory, setAddingAccessory] = useState(false);
+  const [newExerciseError, setNewExerciseError] = useState<string | null>(null);
   const [stats, setStats] = useState({ sessions: 0, pillars: 0, accessories: 0 });
   const [storageInfo, setStorageInfo] = useState({ persisted: false, usageMB: '0' });
 
@@ -48,6 +51,36 @@ const Settings: React.FC = () => {
   const updatePillar = async (pillar: Pillar) => {
     await repository.putPillar(pillar);
     setEditingPillar(null);
+    loadData();
+  };
+
+  const handleAddPillar = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setNewExerciseError(null);
+    const formData = new FormData(e.currentTarget);
+    const name = (formData.get('name') as string).trim();
+    const muscleGroup = formData.get('muscleGroup') as any;
+    const cadenceDays = parseInt(formData.get('cadence') as string) || 7;
+
+    if (!name) return setNewExerciseError('Name is required');
+    if (!(await repository.isPillarNameUnique(name))) return setNewExerciseError('Exercise already exists');
+
+    await repository.createPillar({ name, muscleGroup, cadenceDays });
+    setAddingPillar(false);
+    loadData();
+  };
+
+  const handleAddAccessory = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setNewExerciseError(null);
+    const formData = new FormData(e.currentTarget);
+    const name = (formData.get('name') as string).trim();
+
+    if (!name) return setNewExerciseError('Name is required');
+    if (!(await repository.isAccessoryNameUnique(name))) return setNewExerciseError('Accessory already exists');
+
+    await repository.createAccessory(name);
+    setAddingAccessory(false);
     loadData();
   };
 
@@ -203,7 +236,18 @@ const Settings: React.FC = () => {
 
       <section className="flex flex-col gap-4">
         <div className="flex justify-between items-end">
-          <h3 className="text-gray-400 font-bold uppercase text-xs tracking-widest">Pillar Catalog</h3>
+          <div className="flex flex-col gap-1">
+            <h3 className="text-gray-400 font-bold uppercase text-xs tracking-widest">Pillar Catalog</h3>
+            <button 
+              onClick={() => {
+                setAddingPillar(!addingPillar);
+                setNewExerciseError(null);
+              }}
+              className="flex items-center gap-1.5 text-blue-500 font-bold text-[10px] uppercase hover:text-blue-400 transition-colors"
+            >
+              <Plus size={14} /> Add Custom Pillar
+            </button>
+          </div>
           <button 
             onClick={() => setShowArchived(!showArchived)}
             className={`text-[10px] font-bold uppercase tracking-tighter px-2 py-1 rounded border transition-colors ${showArchived ? 'bg-blue-500/10 border-blue-500/50 text-blue-400' : 'border-gray-800 text-gray-600'}`}
@@ -211,6 +255,60 @@ const Settings: React.FC = () => {
             {showArchived ? 'Showing All' : 'Show Archived'}
           </button>
         </div>
+
+        {addingPillar && (
+          <form onSubmit={handleAddPillar} className="bg-blue-600/5 border border-blue-500/20 rounded-2xl p-4 flex flex-col gap-4 animate-in slide-in-from-top-4 duration-300">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex flex-col gap-1 col-span-2">
+                <label className="text-[10px] text-gray-500 uppercase font-bold">Exercise Name</label>
+                <input 
+                  name="name"
+                  type="text" 
+                  placeholder="e.g. Overhead Press"
+                  className="bg-gray-900 border border-gray-700 rounded-lg p-2 text-sm text-white outline-none focus:border-blue-500"
+                  autoFocus
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-[10px] text-gray-500 uppercase font-bold">Muscle Group</label>
+                <select name="muscleGroup" className="bg-gray-900 border border-gray-700 rounded-lg p-2 text-sm text-white outline-none focus:border-blue-500 appearance-none">
+                  <option value="Push">Push</option>
+                  <option value="Pull">Pull</option>
+                  <option value="Legs">Legs</option>
+                  <option value="Core">Core</option>
+                  <option value="Full Body">Full Body</option>
+                  <option value="Conditioning">Conditioning</option>
+                </select>
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-[10px] text-gray-500 uppercase font-bold">Target Cadence (Days)</label>
+                <input 
+                  name="cadence"
+                  type="number" 
+                  defaultValue={7}
+                  className="bg-gray-900 border border-gray-700 rounded-lg p-2 text-sm text-white outline-none focus:border-blue-500"
+                />
+              </div>
+            </div>
+            {newExerciseError && <p className="text-red-400 text-[10px] font-bold uppercase">{newExerciseError}</p>}
+            <div className="flex gap-2">
+              <button 
+                type="button" 
+                onClick={() => setAddingPillar(false)}
+                className="flex-1 py-2 rounded-lg bg-gray-800 text-gray-400 text-xs font-bold uppercase"
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit"
+                className="flex-2 py-2 px-6 rounded-lg bg-blue-600 text-white text-xs font-bold uppercase"
+              >
+                Create Pillar
+              </button>
+            </div>
+          </form>
+        )}
+
         <div className="flex flex-col gap-3">
           {pillars.map(p => (
             <div key={p.id} className={`bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden ${p.isActive === false ? 'opacity-50' : ''}`}>
@@ -264,6 +362,52 @@ const Settings: React.FC = () => {
             </div>
           ))}
         </div>
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <div className="flex flex-col gap-1">
+          <h3 className="text-gray-400 font-bold uppercase text-xs tracking-widest">Accessory Catalog</h3>
+          <button 
+            onClick={() => {
+              setAddingAccessory(!addingAccessory);
+              setNewExerciseError(null);
+            }}
+            className="flex items-center gap-1.5 text-blue-500 font-bold text-[10px] uppercase hover:text-blue-400 transition-colors w-fit"
+          >
+            <Plus size={14} /> Add Custom Accessory
+          </button>
+        </div>
+
+        {addingAccessory && (
+          <form onSubmit={handleAddAccessory} className="bg-blue-600/5 border border-blue-500/20 rounded-2xl p-4 flex flex-col gap-4 animate-in slide-in-from-top-4 duration-300">
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] text-gray-500 uppercase font-bold">Accessory Name</label>
+              <input 
+                name="name"
+                type="text" 
+                placeholder="e.g. Bicep Curls"
+                className="bg-gray-900 border border-gray-700 rounded-lg p-2 text-sm text-white outline-none focus:border-blue-500"
+                autoFocus
+              />
+            </div>
+            {newExerciseError && <p className="text-red-400 text-[10px] font-bold uppercase">{newExerciseError}</p>}
+            <div className="flex gap-2">
+              <button 
+                type="button" 
+                onClick={() => setAddingAccessory(false)}
+                className="flex-1 py-2 rounded-lg bg-gray-800 text-gray-400 text-xs font-bold uppercase"
+              >
+                Cancel
+              </button>
+              <button 
+                type="submit"
+                className="flex-2 py-2 px-6 rounded-lg bg-blue-600 text-white text-xs font-bold uppercase"
+              >
+                Create Accessory
+              </button>
+            </div>
+          </form>
+        )}
       </section>
 
       <section className="flex flex-col gap-3">

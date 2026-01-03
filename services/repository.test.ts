@@ -228,4 +228,51 @@ describe('repository history extensions', () => {
     await repository.clearPillars();
     await repository.clearSessions();
   });
+
+  describe('custom exercise creation', () => {
+    it('validates pillar name uniqueness case-insensitively', async () => {
+      await repository.createPillar({ name: 'Unique Pillar', muscleGroup: 'Push', cadenceDays: 7 });
+      expect(await repository.isPillarNameUnique('Unique Pillar')).toBe(false);
+      expect(await repository.isPillarNameUnique('unique pillar')).toBe(false);
+      expect(await repository.isPillarNameUnique('Different Pillar')).toBe(true);
+      await repository.clearPillars();
+    });
+
+    it('creates a pillar with correct initial stats', async () => {
+      const id = await repository.createPillar({ name: 'New Pillar', muscleGroup: 'Legs', cadenceDays: 10 });
+      const p = await repository.getPillarById(id);
+      expect(p?.isActive).toBe(true);
+      expect(p?.prWeight).toBe(0);
+      expect(p?.minWorkingWeight).toBe(0);
+      expect(p?.lastCountedAt).toBe(null);
+      await repository.clearPillars();
+    });
+
+    it('validates accessory name uniqueness', async () => {
+      await repository.createAccessory('Unique Accessory');
+      expect(await repository.isAccessoryNameUnique('Unique Accessory')).toBe(false);
+      expect(await repository.isAccessoryNameUnique('New Accessory')).toBe(true);
+      await repository.clearAccessories();
+    });
+
+    it('creates an accessory correctly', async () => {
+      const id = await repository.createAccessory('New Accessory');
+      const accs = await repository.getAllAccessories();
+      expect(accs.some(a => a.id === id && a.name === 'New Accessory')).toBe(true);
+      await repository.clearAccessories();
+    });
+
+    it('handles whitespace in uniqueness checks', async () => {
+      await repository.createPillar({ name: ' Space Pillar ', muscleGroup: 'Push', cadenceDays: 7 });
+      expect(await repository.isPillarNameUnique('Space Pillar')).toBe(false);
+      expect(await repository.isPillarNameUnique('  space pillar  ')).toBe(false);
+      await repository.clearPillars();
+    });
+
+    it('ensures accessories also handle case-insensitive uniqueness', async () => {
+      await repository.createAccessory('Case Accessory');
+      expect(await repository.isAccessoryNameUnique('case accessory')).toBe(false);
+      await repository.clearAccessories();
+    });
+  });
 });
