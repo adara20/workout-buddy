@@ -35,6 +35,24 @@ export class Repository {
   async getPillarById(id: string): Promise<Pillar | undefined> {
     return db.pillars.get(id);
   }
+  async isPillarNameUnique(name: string): Promise<boolean> {
+    const trimmed = name.trim().toLowerCase();
+    const count = await db.pillars.filter(p => p.name.trim().toLowerCase() === trimmed).count();
+    return count === 0;
+  }
+  async createPillar(data: Pick<Pillar, 'name' | 'muscleGroup' | 'cadenceDays'>): Promise<string> {
+    const newPillar: Pillar = {
+      ...data,
+      id: generateUUID(),
+      isActive: true,
+      prWeight: 0,
+      minWorkingWeight: 0,
+      regressionFloorWeight: 0,
+      lastCountedAt: null,
+      lastLoggedAt: null
+    };
+    return this.putPillar(newPillar);
+  }
   async updatePillar(id: string, updates: Partial<Pillar>): Promise<number> {
     const res = await db.pillars.update(id, updates);
     this.notifyChange();
@@ -67,6 +85,24 @@ export class Repository {
   async clearAccessories(): Promise<void> {
     await db.accessories.clear();
     this.notifyChange();
+  }
+  async isAccessoryNameUnique(name: string): Promise<boolean> {
+    const trimmed = name.trim().toLowerCase();
+    const count = await db.accessories.filter(a => a.name.trim().toLowerCase() === trimmed).count();
+    return count === 0;
+  }
+  async createAccessory(name: string): Promise<string> {
+    const newAcc: Accessory = {
+      id: generateUUID(),
+      name: name.trim(),
+      tags: []
+    };
+    return this.putAccessory(newAcc);
+  }
+  async putAccessory(accessory: Accessory): Promise<string> {
+    const res = await db.accessories.put(accessory);
+    this.notifyChange();
+    return res;
   }
   async bulkPutAccessories(accessories: Accessory[]): Promise<string> {
     const res = await db.accessories.bulkPut(accessories);
