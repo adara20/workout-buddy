@@ -261,5 +261,18 @@ describe('repository history extensions', () => {
       expect(accs.some(a => a.id === id && a.name === 'New Accessory')).toBe(true);
       await repository.clearAccessories();
     });
+
+    it('handles whitespace in uniqueness checks', async () => {
+      await repository.createPillar({ name: ' Space Pillar ', muscleGroup: 'Push', cadenceDays: 7 });
+      expect(await repository.isPillarNameUnique('Space Pillar')).toBe(false);
+      expect(await repository.isPillarNameUnique('  space pillar  ')).toBe(false);
+      await repository.clearPillars();
+    });
+
+    it('ensures accessories also handle case-insensitive uniqueness', async () => {
+      await repository.createAccessory('Case Accessory');
+      expect(await repository.isAccessoryNameUnique('case accessory')).toBe(false);
+      await repository.clearAccessories();
+    });
   });
 });
