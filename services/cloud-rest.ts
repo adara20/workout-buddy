@@ -70,7 +70,7 @@ export async function downloadFromCloud(): Promise<boolean> {
   if (!data) return false;
 
   // Overwrite local data using transactions for safety
-  await repository.runTransaction('rw', ['pillars', 'accessories', 'sessions', 'config'], async () => {
+  await repository.runTransaction('rw', ['pillars', 'accessories', 'workout_sessions', 'config'], async () => {
     if (data.pillars) {
       await repository.clearPillars();
       await repository.bulkPutPillars(data.pillars);

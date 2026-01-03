@@ -12,8 +12,7 @@ describe('session service', () => {
     regressionFloorWeight: 115,
     prWeight: 185,
     lastCountedAt: null,
-    lastLoggedAt: null,
-    notes: ''
+    lastLoggedAt: null
   };
 
   const initialEntry: PillarEntry = {

@@ -16,8 +16,7 @@ describe('getRecommendedPillars', () => {
     minWorkingWeight: 10,
     regressionFloorWeight: 5,
     prWeight: 20,
-    lastLoggedAt: null,
-    notes: ''
+    lastLoggedAt: null
   });
 
   const p1 = createPillar('1', 'Push', 5); // Score 1.0

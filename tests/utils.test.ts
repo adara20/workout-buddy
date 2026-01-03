@@ -36,7 +36,10 @@ describe('utils', () => {
         cadenceDays: 5,
         lastCountedAt: NOW - (5 * ONE_DAY_MS), // 5 days ago
         muscleGroup: 'Push',
-        notes: '',
+        minWorkingWeight: 10,
+        regressionFloorWeight: 5,
+        prWeight: 20,
+        lastLoggedAt: null
       };
       // 5 days ago / 5 cadence = 1.0
       expect(getOverdueScore(pillar, NOW)).toBe(1.0);
@@ -49,7 +52,10 @@ describe('utils', () => {
         cadenceDays: 5,
         lastCountedAt: NOW - (10 * ONE_DAY_MS), // 10 days ago
         muscleGroup: 'Push',
-        notes: '',
+        minWorkingWeight: 10,
+        regressionFloorWeight: 5,
+        prWeight: 20,
+        lastLoggedAt: null
       };
       expect(getOverdueScore(pillar, NOW)).toBe(2.0);
     });
@@ -61,7 +67,10 @@ describe('utils', () => {
           cadenceDays: 5,
           lastCountedAt: null,
           muscleGroup: 'Push',
-          notes: '',
+          minWorkingWeight: 10,
+          regressionFloorWeight: 5,
+          prWeight: 20,
+          lastLoggedAt: null
         };
         // 999 / 5 = 199.8
         expect(getOverdueScore(pillar, NOW)).toBeCloseTo(199.8);
@@ -75,7 +84,10 @@ describe('utils', () => {
       cadenceDays: cadence,
       lastCountedAt: NOW - (daysAgo * ONE_DAY_MS),
       muscleGroup: 'Push',
-      notes: '',
+      minWorkingWeight: 10,
+      regressionFloorWeight: 5,
+      prWeight: 20,
+      lastLoggedAt: null
     });
 
     it('returns green if score < 0.7', () => {

@@ -1,6 +1,7 @@
 
 import Dexie, { Table } from 'dexie';
 import { Pillar, Accessory, WorkoutSession, AppConfig } from './types';
+import { generateUUID } from './utils';
 
 // Incremented when built-in exercises are updated
 const CANONICAL_DATA_VERSION = 4;
@@ -8,7 +9,7 @@ const CANONICAL_DATA_VERSION = 4;
 export class WorkoutDatabase extends Dexie {
   pillars!: Table<Pillar, string>;
   accessories!: Table<Accessory, string>;
-  sessions!: Table<WorkoutSession, number>;
+  sessions!: Table<WorkoutSession, string>;
   config!: Table<AppConfig, string>;
 
   constructor() {
@@ -52,6 +53,35 @@ export class WorkoutDatabase extends Dexie {
         }
       }
     });
+
+    // v3: Add workout_sessions, keep sessions for migration
+    this.version(3).stores({
+      pillars: 'id, name, muscleGroup, lastCountedAt, lastLoggedAt',
+      accessories: 'id, name, *tags',
+      sessions: '++id, date', // Keep legacy table for migration
+      workout_sessions: 'id, date',
+      config: 'id'
+    }).upgrade(async tx => {
+      const oldSessions = await tx.table('sessions').toArray();
+      const newSessionsTable = tx.table('workout_sessions');
+      for (const s of oldSessions) {
+        const newSession = {
+          ...s,
+          id: generateUUID() // Assign new UUID
+        };
+        await newSessionsTable.add(newSession);
+      }
+    });
+
+    // v4: Remove the legacy sessions table
+    this.version(4).stores({
+      sessions: null
+    });
+  }
+
+  // Convenience getter to use 'sessions' name in code but point to 'workout_sessions'
+  get sessionsTable() {
+    return this.table('workout_sessions');
   }
 }
 
@@ -108,7 +138,7 @@ async function initAppData() {
     config = { 
       id: 'main', 
       targetExercisesPerSession: 4, 
-      deviceId: crypto.randomUUID(),
+      deviceId: generateUUID(),
       appDataVersion: 0 
     };
     await db.config.add(config);

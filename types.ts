@@ -36,7 +36,7 @@ export interface AccessoryEntry {
 }
 
 export interface WorkoutSession {
-  id?: number; 
+  id?: string; 
   date: number; // epoch ms
   pillarsPerformed: PillarEntry[];
   accessoriesPerformed: AccessoryEntry[];
