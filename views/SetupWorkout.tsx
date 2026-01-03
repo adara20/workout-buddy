@@ -23,7 +23,7 @@ const SetupWorkout: React.FC<SetupWorkoutProps> = ({
   const muscleGroups: MuscleGroup[] = ['Legs', 'Push', 'Pull', 'Core', 'Full Body', 'Conditioning'];
 
   useEffect(() => {
-    repository.getAllPillars().then(setAllPillars);
+    repository.getActivePillars().then(setAllPillars);
   }, []);
 
   useEffect(() => {

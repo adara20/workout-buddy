@@ -14,7 +14,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onStart }) => {
   const now = Date.now();
 
   useEffect(() => {
-    repository.getAllPillars().then(setPillars);
+    repository.getActivePillars().then(setPillars);
   }, []);
 
   const sortedPillars = [...pillars].sort((a, b) => {

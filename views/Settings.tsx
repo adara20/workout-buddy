@@ -2,12 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { repository } from '../services/repository';
 import { initOnce } from '../db';
 import { Pillar, AppConfig, ExportPayload } from '../types';
-import { Download, Upload, Trash2, Edit2, ShieldCheck, Database, Info, Wrench } from 'lucide-react';
+import { Download, Upload, Trash2, Edit2, ShieldCheck, Database, Info, Wrench, Archive, RotateCcw } from 'lucide-react';
 
 const APP_VERSION = "2.1.0";
 
 const Settings: React.FC = () => {
   const [pillars, setPillars] = useState<Pillar[]>([]);
+  const [showArchived, setShowArchived] = useState(false);
   const [config, setConfig] = useState<AppConfig | null>(null);
   const [editingPillar, setEditingPillar] = useState<string | null>(null);
   const [stats, setStats] = useState({ sessions: 0, pillars: 0, accessories: 0 });
@@ -16,7 +17,7 @@ const Settings: React.FC = () => {
   useEffect(() => {
     loadData();
     updateStorageStatus();
-  }, []);
+  }, [showArchived]);
 
   const updateStorageStatus = async () => {
     if (navigator.storage) {
@@ -28,7 +29,7 @@ const Settings: React.FC = () => {
   };
 
   const loadData = async () => {
-    const p = await repository.getAllPillars();
+    const p = showArchived ? await repository.getAllPillars() : await repository.getActivePillars();
     const c = await repository.getConfig();
     const sCount = await repository.getSessionCount();
     const aCount = await repository.getAccessoryCount();
@@ -47,6 +48,19 @@ const Settings: React.FC = () => {
   const updatePillar = async (pillar: Pillar) => {
     await repository.putPillar(pillar);
     setEditingPillar(null);
+    loadData();
+  };
+
+  const toggleArchive = async (pillar: Pillar) => {
+    if (pillar.isActive === false) {
+      await repository.restorePillar(pillar.id);
+    } else {
+      if (confirm(`Archive ${pillar.name}? It will be hidden from Dashboard and Setup, but history is kept.`)) {
+        await repository.archivePillar(pillar.id);
+      } else {
+        return;
+      }
+    }
     loadData();
   };
 
@@ -188,21 +202,41 @@ const Settings: React.FC = () => {
       </section>
 
       <section className="flex flex-col gap-4">
-        <h3 className="text-gray-400 font-bold uppercase text-xs tracking-widest">Pillar Catalog</h3>
+        <div className="flex justify-between items-end">
+          <h3 className="text-gray-400 font-bold uppercase text-xs tracking-widest">Pillar Catalog</h3>
+          <button 
+            onClick={() => setShowArchived(!showArchived)}
+            className={`text-[10px] font-bold uppercase tracking-tighter px-2 py-1 rounded border transition-colors ${showArchived ? 'bg-blue-500/10 border-blue-500/50 text-blue-400' : 'border-gray-800 text-gray-600'}`}
+          >
+            {showArchived ? 'Showing All' : 'Show Archived'}
+          </button>
+        </div>
         <div className="flex flex-col gap-3">
           {pillars.map(p => (
-            <div key={p.id} className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden">
+            <div key={p.id} className={`bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden ${p.isActive === false ? 'opacity-50' : ''}`}>
               <div className="p-4 flex justify-between items-center">
-                <div>
-                  <h4 className="font-bold">{p.name}</h4>
-                  <p className="text-[10px] text-gray-500 uppercase">{p.muscleGroup} • {p.cadenceDays} Day Cycle</p>
+                <div className="flex items-center gap-3">
+                   {p.isActive === false && <Archive size={14} className="text-gray-500" />}
+                   <div>
+                    <h4 className={`font-bold ${p.isActive === false ? 'text-gray-500 line-through' : ''}`}>{p.name}</h4>
+                    <p className="text-[10px] text-gray-500 uppercase">{p.muscleGroup} • {p.cadenceDays} Day Cycle</p>
+                  </div>
                 </div>
-                <button 
-                  onClick={() => setEditingPillar(editingPillar === p.id ? null : p.id)}
-                  className="p-2 text-gray-400 active:text-white"
-                >
-                  <Edit2 size={16} />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={() => toggleArchive(p)}
+                    className={`p-2 transition-colors ${p.isActive === false ? 'text-blue-500' : 'text-gray-600 hover:text-red-400'}`}
+                    title={p.isActive === false ? "Restore" : "Archive"}
+                  >
+                    {p.isActive === false ? <RotateCcw size={16} /> : <Archive size={16} />}
+                  </button>
+                  <button 
+                    onClick={() => setEditingPillar(editingPillar === p.id ? null : p.id)}
+                    className="p-2 text-gray-400 active:text-white"
+                  >
+                    <Edit2 size={16} />
+                  </button>
+                </div>
               </div>
               
               {editingPillar === p.id && (
