@@ -95,7 +95,7 @@ const App: React.FC = () => {
   const renderView = () => {
     switch (currentView) {
       case 'dashboard':
-        return <Dashboard onStart={startSetup} />;
+        return <Dashboard key="dashboard" onStart={startSetup} currentView={currentView} />;
       case 'setup':
         return (
           <SetupWorkout 
