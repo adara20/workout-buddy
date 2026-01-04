@@ -32,3 +32,4 @@ generate-tasks.md
 generate-prd.md
 tasks/
 .env
+coverage/
