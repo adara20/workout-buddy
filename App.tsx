@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { initOnce } from './db';
 import { repository } from './services/repository';
 import { uploadToCloud } from './services/cloud-rest';
-import { WorkoutSession, Pillar, AppConfig } from './types';
+import { WorkoutSession, Pillar, AppConfig, PillarEntry } from './types';
+import { calculatePillarEntryUpdate } from './services/session';
 import Dashboard from './views/Dashboard';
 import SetupWorkout from './views/SetupWorkout';
 import ActiveSession from './views/ActiveSession';
@@ -68,14 +69,18 @@ const App: React.FC = () => {
   const startSession = (pillars: Pillar[], date?: number) => {
     const session: Partial<WorkoutSession> = {
       date: date || Date.now(),
-      pillarsPerformed: pillars.map(p => ({
-        pillarId: p.id,
-        name: p.name,
-        weight: p.prWeight > 0 ? p.prWeight : p.minWorkingWeight,
-        counted: false,
-        isPR: false,
-        warning: false
-      })),
+      pillarsPerformed: pillars.map(p => {
+        const initialWeight = p.prWeight > 0 ? p.prWeight : p.minWorkingWeight;
+        const initialEntry: PillarEntry = {
+          pillarId: p.id,
+          name: p.name,
+          weight: initialWeight,
+          counted: false,
+          isPR: false,
+          warning: false
+        };
+        return calculatePillarEntryUpdate(initialEntry, p, 0);
+      }),
       accessoriesPerformed: []
     };
     setActiveSession(session);
@@ -90,7 +95,7 @@ const App: React.FC = () => {
   const renderView = () => {
     switch (currentView) {
       case 'dashboard':
-        return <Dashboard onStart={startSetup} />;
+        return <Dashboard key="dashboard" onStart={startSetup} currentView={currentView} />;
       case 'setup':
         return (
           <SetupWorkout 

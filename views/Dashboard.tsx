@@ -7,15 +7,18 @@ import { Play, Dumbbell, AlertTriangle } from 'lucide-react';
 
 interface DashboardProps {
   onStart: () => void;
+  currentView?: string;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ onStart }) => {
+const Dashboard: React.FC<DashboardProps> = ({ onStart, currentView }) => {
   const [pillars, setPillars] = useState<Pillar[]>([]);
   const now = Date.now();
 
   useEffect(() => {
-    repository.getActivePillars().then(setPillars);
-  }, []);
+    if (currentView === 'dashboard') {
+      repository.getActivePillars().then(setPillars);
+    }
+  }, [currentView]);
 
   const sortedPillars = [...pillars].sort((a, b) => {
     const scoreA = getOverdueScore(a, now);
