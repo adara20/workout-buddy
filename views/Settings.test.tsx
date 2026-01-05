@@ -9,6 +9,7 @@ vi.mock('../services/repository', () => ({
   repository: {
     getActivePillars: vi.fn(),
     getAllPillars: vi.fn(),
+    getAllAccessories: vi.fn(),
     getConfig: vi.fn(),
     getSessionCount: vi.fn(),
     getAccessoryCount: vi.fn(),
@@ -35,6 +36,7 @@ describe('Settings Component', () => {
     (repository.getActivePillars as any).mockResolvedValue([
         createMockPillar({ id: 'p1', name: 'Squat', isActive: true })
     ]);
+    (repository.getAllAccessories as any).mockResolvedValue([]);
     (repository.getConfig as any).mockResolvedValue({ targetExercisesPerSession: 4 });
     (repository.getSessionCount as any).mockResolvedValue(10);
     (repository.getAccessoryCount as any).mockResolvedValue(5);
@@ -100,5 +102,31 @@ describe('Settings Component', () => {
 
     expect(window.confirm).toHaveBeenCalled();
     expect(repository.archivePillar).toHaveBeenCalledWith('p1');
+  });
+
+  it('toggles a linked accessory for a pillar', async () => {
+    (repository.getAllAccessories as any).mockResolvedValue([
+      { id: 'acc1', name: 'Dips', tags: [] }
+    ]);
+    (repository.getActivePillars as any).mockResolvedValue([
+      createMockPillar({ id: 'p1', name: 'Bench', preferredAccessoryIds: [] })
+    ]);
+
+    const { container } = render(<Settings />);
+    
+    await waitFor(() => screen.getByText('Bench'));
+    
+    // Open edit mode
+    const editBtn = screen.getByTitle('Edit Pillar');
+    fireEvent.click(editBtn);
+
+    // Find the accessory button
+    const accBtn = await screen.findByText('Dips');
+    fireEvent.click(accBtn);
+
+    expect(repository.putPillar).toHaveBeenCalledWith(expect.objectContaining({
+      id: 'p1',
+      preferredAccessoryIds: ['acc1']
+    }));
   });
 });
