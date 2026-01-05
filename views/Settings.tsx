@@ -429,7 +429,7 @@ const Settings: React.FC = () => {
                       onClick={saveEdit}
                       className="flex-2 py-2.5 rounded-xl bg-blue-600 text-white text-xs font-bold uppercase flex items-center justify-center gap-2 hover:bg-blue-500 transition-colors shadow-lg shadow-blue-900/20"
                     >
-                      <Check size={14} /> Save Changes
+                      <Check size={14} /> Save
                     </button>
                   </div>
                 </div>

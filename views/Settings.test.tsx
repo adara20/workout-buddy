@@ -127,7 +127,7 @@ describe('Settings Component', () => {
     expect(repository.putPillar).not.toHaveBeenCalled();
 
     // Click Save
-    const saveBtn = screen.getByText('Save Changes');
+    const saveBtn = screen.getByText('Save');
     fireEvent.click(saveBtn);
 
     // NOW it should be called
@@ -165,6 +165,6 @@ describe('Settings Component', () => {
     expect(repository.putPillar).not.toHaveBeenCalled();
 
     // The edit form should be closed (we can check by looking for the Save button which should be gone)
-    expect(screen.queryByText('Save Changes')).not.toBeInTheDocument();
+    expect(screen.queryByText('Save')).not.toBeInTheDocument();
   });
 });
