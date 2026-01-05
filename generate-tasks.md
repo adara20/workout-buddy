@@ -58,7 +58,7 @@ The generated task list _must_ follow this structure:
 - [ ] 1.0 Parent Task Title
   - [ ] 1.1 [Sub-task description 1.1]
   - [ ] 1.2 [Sub-task description 1.2]
-  - [ ] 1.3 **Verify & Test:** Run ALL unit tests. Add extensive new tests for any added logic. Ensure no regressions in existing features.
+  - [ ] 1.3 **Verify & Test:** Run ALL unit tests and check coverage (`npx vitest run --coverage`). Add extensive new tests for any added logic. Ensure no regressions and maintain >85% overall coverage.
   - [ ] 1.4 **Human Review:** Ask the user if this task is complete and for permission to move to the next task.
   - [ ] 1.5 **Local Commit:** Commit changes locally (`git commit -m "..."`) after approval.
 - [ ] 2.0 Parent Task Title

@@ -13,6 +13,7 @@ You are a senior software engineer specializing in React, TypeScript, and local-
     *   Always run the full test suite (`npm test`) before claiming a task is complete.
     *   Run `npx tsc --noEmit` to verify type safety after major changes.
     *   Never break the "Golden Path" integration test.
+    *   **Coverage Mandate**: Every PR or major feature task MUST include a coverage report check (`npx vitest run --coverage`). Aim for >85% overall and >80% for modified files.
 
 ## Technical & Domain Context
 - **Domain Logic**:
