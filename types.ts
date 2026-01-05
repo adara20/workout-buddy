@@ -12,6 +12,7 @@ export interface Pillar {
   lastCountedAt: number | null; // Timestamp (epoch ms)
   lastLoggedAt: number | null;  // Timestamp (epoch ms)
   isActive?: boolean;
+  preferredAccessoryIds?: string[];
 }
 
 export interface Accessory {
