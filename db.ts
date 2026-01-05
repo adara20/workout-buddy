@@ -4,7 +4,7 @@ import { Pillar, Accessory, WorkoutSession, AppConfig } from './types';
 import { generateUUID } from './utils';
 
 // Incremented when built-in exercises are updated
-const CANONICAL_DATA_VERSION = 4;
+const CANONICAL_DATA_VERSION = 5;
 
 export class WorkoutDatabase extends Dexie {
   pillars!: Table<Pillar, string>;
@@ -123,7 +123,23 @@ const CANONICAL_ACCESSORIES: Accessory[] = [
   { id: 'acc_curls', name: 'Bicep Curls', tags: ['Pull', 'Arms'] },
   { id: 'acc_tricep_press', name: 'Triceps Pressdown', tags: ['Push', 'Arms'] },
   { id: 'acc_calf_raise', name: 'Calf Raise', tags: ['Legs'] },
-  { id: 'acc_ham_curl', name: 'Hamstring Curl', tags: ['Legs'] }
+  { id: 'acc_ham_curl', name: 'Hamstring Curl', tags: ['Legs'] },
+  { id: 'acc_kb_rdl', name: 'Kettlebell RDL', tags: ['Legs', 'Hamstrings'] },
+  { id: 'acc_barbell_calf_raise', name: 'Barbell Calf Raises', tags: ['Legs', 'Calves'] },
+  { id: 'acc_russian_twist', name: 'Russian Twists', tags: ['Core', 'Obliques'] },
+  { id: 'acc_db_lat_raise', name: 'Dumbbell Lateral Raises', tags: ['Shoulders', 'Side Delts'] },
+  { id: 'acc_db_rev_fly', name: 'Dumbbell Reverse Flyes', tags: ['Shoulders', 'Rear Delts'] },
+  { id: 'acc_planks', name: 'Planks', tags: ['Core', 'Abs'] },
+  { id: 'acc_dead_bugs', name: 'Dead Bugs', tags: ['Core', 'Abs'] },
+  { id: 'acc_db_ohp', name: 'Dumbbell Overhead Press', tags: ['Push', 'Shoulders'] },
+  { id: 'acc_incline_db_press', name: 'Incline Dumbbell Press', tags: ['Push', 'Upper Chest'] },
+  { id: 'acc_incline_db_fly', name: 'Incline Dumbbell Flyes', tags: ['Push', 'Upper Chest'] },
+  { id: 'acc_band_pull_aparts', name: 'Band Pull-Aparts', tags: ['Pull', 'Rear Delts'] },
+  { id: 'acc_band_face_pulls', name: 'Band Face Pulls', tags: ['Pull', 'Rear Delts', 'Shoulders'] },
+  { id: 'acc_db_rows', name: 'Dumbbell Rows', tags: ['Pull', 'Back'] },
+  { id: 'acc_bb_rows', name: 'Barbell Rows', tags: ['Pull', 'Back'] },
+  { id: 'acc_db_shrugs', name: 'Dumbbell Shrugs', tags: ['Pull', 'Traps'] },
+  { id: 'acc_shoulder_stretch', name: 'Shoulder Stretches', tags: ['Mobility'] }
 ];
 
 let initPromise: Promise<void> | null = null;
