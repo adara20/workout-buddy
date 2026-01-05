@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { repository } from '../services/repository';
 import { initOnce } from '../db';
-import { Pillar, AppConfig, ExportPayload } from '../types';
+import { Pillar, Accessory, AppConfig, ExportPayload } from '../types';
 import { Download, Upload, Trash2, Edit2, ShieldCheck, Database, Info, Wrench, Archive, RotateCcw, Plus } from 'lucide-react';
 
 const APP_VERSION = "2.1.0";
