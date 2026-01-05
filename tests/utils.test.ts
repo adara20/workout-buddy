@@ -1,10 +1,51 @@
-import { describe, it, expect } from 'vitest';
-import { getDaysSince, getOverdueScore, getStatusColor, StatusColor } from '../utils';
+import { describe, it, expect, vi } from 'vitest';
+import { getDaysSince, getOverdueScore, getStatusColor, generateUUID, getStatusHex, getStatusBg } from '../utils';
 import { Pillar } from '../types';
 
 describe('utils', () => {
   const NOW = 1704067200000; // 2024-01-01T00:00:00.000Z
   const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+
+  describe('generateUUID', () => {
+    it('uses crypto.randomUUID if available', () => {
+      const mockUUID = '1234-5678';
+      vi.stubGlobal('crypto', {
+        randomUUID: vi.fn().mockReturnValue(mockUUID)
+      });
+
+      expect(generateUUID()).toBe(mockUUID);
+      expect(global.crypto.randomUUID).toHaveBeenCalled();
+
+      vi.unstubAllGlobals();
+    });
+
+    it('uses fallback if crypto.randomUUID is NOT available', () => {
+      vi.stubGlobal('crypto', {
+        randomUUID: undefined
+      });
+
+      const uuid = generateUUID();
+      expect(uuid).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+
+      vi.unstubAllGlobals();
+    });
+  });
+
+  describe('getStatusHex', () => {
+    it('returns correct hex for colors', () => {
+      expect(getStatusHex('green')).toBe('#22c55e');
+      expect(getStatusHex('yellow')).toBe('#eab308');
+      expect(getStatusHex('red')).toBe('#ef4444');
+    });
+  });
+
+  describe('getStatusBg', () => {
+    it('returns correct bg class for colors', () => {
+      expect(getStatusBg('green')).toBe('bg-green-500');
+      expect(getStatusBg('yellow')).toBe('bg-yellow-500');
+      expect(getStatusBg('red')).toBe('bg-red-500');
+    });
+  });
 
   describe('getDaysSince', () => {
     it('returns 999 if timestamp is null', () => {
