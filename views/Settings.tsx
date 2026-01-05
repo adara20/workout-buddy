@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { repository } from '../services/repository';
 import { initOnce } from '../db';
 import { Pillar, Accessory, AppConfig, ExportPayload } from '../types';
-import { Download, Upload, Trash2, Edit2, ShieldCheck, Database, Info, Wrench, Archive, RotateCcw, Plus } from 'lucide-react';
+import { Download, Upload, Trash2, Edit2, ShieldCheck, Database, Info, Wrench, Archive, RotateCcw, Plus, X, Check } from 'lucide-react';
 
 const APP_VERSION = "2.1.0";
 
@@ -12,6 +12,7 @@ const Settings: React.FC = () => {
   const [showArchived, setShowArchived] = useState(false);
   const [config, setConfig] = useState<AppConfig | null>(null);
   const [editingPillar, setEditingPillar] = useState<string | null>(null);
+  const [editForm, setEditForm] = useState<Partial<Pillar> | null>(null);
   const [addingPillar, setAddingPillar] = useState(false);
   const [addingAccessory, setAddingAccessory] = useState(false);
   const [newExerciseError, setNewExerciseError] = useState<string | null>(null);
@@ -50,10 +51,36 @@ const Settings: React.FC = () => {
     setConfig(newConfig);
   };
 
-  const updatePillar = async (pillar: Pillar) => {
-    await repository.putPillar(pillar);
+  const startEditing = (p: Pillar) => {
+    if (editingPillar === p.id) {
+      // Toggle off if clicking same pillar
+      cancelEdit();
+    } else {
+      setEditingPillar(p.id);
+      setEditForm({ ...p });
+    }
+  };
+
+  const cancelEdit = () => {
     setEditingPillar(null);
-    loadData();
+    setEditForm(null);
+  };
+
+  const saveEdit = async () => {
+    if (editForm && editingPillar) {
+      // Merge editForm with original pillar to ensure we don't lose fields not in the form
+      // (though currently we copy everything)
+      const original = pillars.find(p => p.id === editingPillar);
+      if (original) {
+        await repository.putPillar({ ...original, ...editForm });
+        loadData();
+      }
+    }
+    cancelEdit();
+  };
+
+  const updateEditForm = (updates: Partial<Pillar>) => {
+    setEditForm(prev => prev ? { ...prev, ...updates } : updates);
   };
 
   const handleAddPillar = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -331,7 +358,7 @@ const Settings: React.FC = () => {
                     {p.isActive === false ? <RotateCcw size={16} /> : <Archive size={16} />}
                   </button>
                   <button 
-                    onClick={() => setEditingPillar(editingPillar === p.id ? null : p.id)}
+                    onClick={() => startEditing(p)}
                     className="p-2 text-gray-400 active:text-white"
                     title="Edit Pillar"
                   >
@@ -340,40 +367,43 @@ const Settings: React.FC = () => {
                 </div>
               </div>
               
-              {editingPillar === p.id && (
-                <div className="p-4 border-t border-gray-800 bg-gray-800/30 grid grid-cols-2 gap-4 animate-in slide-in-from-top-2 duration-200">
-                  <div className="flex flex-col gap-1">
-                    <label className="text-[10px] text-gray-500 uppercase font-bold">Cadence</label>
-                    <input 
-                      type="number" 
-                      className="bg-gray-900 border border-gray-700 rounded p-2 text-sm outline-none focus:border-blue-500"
-                      value={p.cadenceDays}
-                      onChange={e => updatePillar({...p, cadenceDays: parseInt(e.target.value) || 1})}
-                    />
+              {editingPillar === p.id && editForm && (
+                <div className="p-4 border-t border-gray-800 bg-gray-800/30 flex flex-col gap-4 animate-in slide-in-from-top-2 duration-200">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[10px] text-gray-500 uppercase font-bold">Cadence</label>
+                      <input 
+                        type="number" 
+                        className="bg-gray-900 border border-gray-700 rounded p-2 text-sm outline-none focus:border-blue-500"
+                        value={editForm.cadenceDays}
+                        onChange={e => updateEditForm({ cadenceDays: parseInt(e.target.value) || 1 })}
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[10px] text-gray-500 uppercase font-bold">Min Working Weight</label>
+                      <input 
+                        type="number" 
+                        className="bg-gray-900 border border-gray-700 rounded p-2 text-sm outline-none focus:border-blue-500"
+                        value={editForm.minWorkingWeight}
+                        onChange={e => updateEditForm({ minWorkingWeight: parseInt(e.target.value) || 0 })}
+                      />
+                    </div>
                   </div>
-                  <div className="flex flex-col gap-1">
-                    <label className="text-[10px] text-gray-500 uppercase font-bold">Min Working Weight</label>
-                    <input 
-                      type="number" 
-                      className="bg-gray-900 border border-gray-700 rounded p-2 text-sm outline-none focus:border-blue-500"
-                      value={p.minWorkingWeight}
-                      onChange={e => updatePillar({...p, minWorkingWeight: parseInt(e.target.value) || 0})}
-                    />
-                  </div>
-                  <div className="col-span-2 flex flex-col gap-1.5 mt-2">
+                  
+                  <div className="flex flex-col gap-1.5">
                     <label className="text-[10px] text-gray-500 uppercase font-bold">Linked Accessories (Picks are prioritized in session)</label>
                     <div className="flex flex-wrap gap-2">
                       {accessories.map(acc => {
-                        const isLinked = (p.preferredAccessoryIds || []).includes(acc.id);
+                        const isLinked = (editForm.preferredAccessoryIds || []).includes(acc.id);
                         return (
                           <button
                             key={acc.id}
                             onClick={() => {
-                              const currentIds = p.preferredAccessoryIds || [];
+                              const currentIds = editForm.preferredAccessoryIds || [];
                               const newIds = isLinked 
                                 ? currentIds.filter(id => id !== acc.id)
                                 : [...currentIds, acc.id];
-                              updatePillar({...p, preferredAccessoryIds: newIds});
+                              updateEditForm({ preferredAccessoryIds: newIds });
                             }}
                             className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase transition-all border ${
                               isLinked 
@@ -386,6 +416,21 @@ const Settings: React.FC = () => {
                         );
                       })}
                     </div>
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    <button 
+                      onClick={cancelEdit}
+                      className="flex-1 py-2.5 px-4 rounded-xl bg-gray-800 text-gray-400 text-xs font-bold uppercase flex items-center justify-center gap-2 hover:bg-gray-700 transition-colors"
+                    >
+                      <X size={14} /> Cancel
+                    </button>
+                    <button 
+                      onClick={saveEdit}
+                      className="flex-2 py-2.5 px-6 rounded-xl bg-blue-600 text-white text-xs font-bold uppercase flex items-center justify-center gap-2 hover:bg-blue-500 transition-colors shadow-lg shadow-blue-900/20"
+                    >
+                      <Check size={14} /> Save
+                    </button>
                   </div>
                 </div>
               )}

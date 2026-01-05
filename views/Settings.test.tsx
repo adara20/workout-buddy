@@ -1,4 +1,3 @@
-
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import Settings from './Settings';
@@ -104,7 +103,7 @@ describe('Settings Component', () => {
     expect(repository.archivePillar).toHaveBeenCalledWith('p1');
   });
 
-  it('toggles a linked accessory for a pillar', async () => {
+  it('saves changes only when Save is clicked', async () => {
     (repository.getAllAccessories as any).mockResolvedValue([
       { id: 'acc1', name: 'Dips', tags: [] }
     ]);
@@ -112,7 +111,7 @@ describe('Settings Component', () => {
       createMockPillar({ id: 'p1', name: 'Bench', preferredAccessoryIds: [] })
     ]);
 
-    const { container } = render(<Settings />);
+    render(<Settings />);
     
     await waitFor(() => screen.getByText('Bench'));
     
@@ -120,13 +119,52 @@ describe('Settings Component', () => {
     const editBtn = screen.getByTitle('Edit Pillar');
     fireEvent.click(editBtn);
 
-    // Find the accessory button
+    // Toggle accessory
     const accBtn = await screen.findByText('Dips');
     fireEvent.click(accBtn);
 
+    // Should NOT have called putPillar yet
+    expect(repository.putPillar).not.toHaveBeenCalled();
+
+    // Click Save
+    const saveBtn = screen.getByText('Save');
+    fireEvent.click(saveBtn);
+
+    // NOW it should be called
     expect(repository.putPillar).toHaveBeenCalledWith(expect.objectContaining({
       id: 'p1',
       preferredAccessoryIds: ['acc1']
     }));
+  });
+
+  it('discards changes when Cancel is clicked', async () => {
+    (repository.getAllAccessories as any).mockResolvedValue([
+      { id: 'acc1', name: 'Dips', tags: [] }
+    ]);
+    (repository.getActivePillars as any).mockResolvedValue([
+      createMockPillar({ id: 'p1', name: 'Bench', preferredAccessoryIds: [] })
+    ]);
+
+    render(<Settings />);
+    
+    await waitFor(() => screen.getByText('Bench'));
+    
+    // Open edit mode
+    const editBtn = screen.getByTitle('Edit Pillar');
+    fireEvent.click(editBtn);
+
+    // Change something (toggle accessory)
+    const accBtn = await screen.findByText('Dips');
+    fireEvent.click(accBtn);
+
+    // Click Cancel
+    const cancelBtn = screen.getByText('Cancel');
+    fireEvent.click(cancelBtn);
+
+    // Should NOT have called putPillar
+    expect(repository.putPillar).not.toHaveBeenCalled();
+
+    // The edit form should be closed (we can check by looking for the Save button which should be gone)
+    expect(screen.queryByText('Save')).not.toBeInTheDocument();
   });
 });
