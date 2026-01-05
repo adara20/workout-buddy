@@ -32,10 +32,12 @@ describe('Golden Path Integration', () => {
         prWeight: 0, // 0 ensure first logging is a PR
         minWorkingWeight: 80,
         cadenceDays: 7,
-        lastCountedAt: null
+        lastCountedAt: null,
+        preferredAccessoryIds: ['curls']
     });
     await repository.putPillar(testPillar);
     await repository.putAccessory(createMockAccessory({ id: 'curls', name: 'Bicep Curls' }));
+    await repository.putAccessory(createMockAccessory({ id: 'legs', name: 'Leg Press' }));
     await repository.putConfig({ id: 'main', targetExercisesPerSession: 4, appDataVersion: 999 }); // High version prevents re-seeding
   });
 
@@ -81,6 +83,14 @@ describe('Golden Path Integration', () => {
     fireEvent.click(plusFive);
     fireEvent.click(plusFive);
     await waitFor(() => expect(within(squatEntry as HTMLElement).getByText('105')).toBeInTheDocument());
+
+    // Verify Recommended Accessories
+    expect(screen.getByText('Bicep Curls')).toBeInTheDocument();
+    expect(screen.queryByText('Leg Press')).not.toBeInTheDocument();
+
+    // Toggle Show All to see everything
+    fireEvent.click(screen.getByText('Show All'));
+    await waitFor(() => expect(screen.getByText('Leg Press')).toBeInTheDocument());
 
     // Add accessory
     const curlsBtn = screen.getByText('Bicep Curls');
