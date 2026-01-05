@@ -31,10 +31,10 @@
   - [x] 1.1 In `db.ts`, update `CANONICAL_ACCESSORIES` to include the new list of accessories provided in the requirements. Ensure IDs are consistent and descriptive (e.g., `acc_kb_rdl`).
   - [x] 1.2 In `db.ts`, increment `CANONICAL_DATA_VERSION` by 1 to trigger the seeding logic on next app load.
   - [x] 1.3 **Verify & Test:** Run `npm test -- run` to ensure no syntax errors and that existing tests still pass.
-  - [ ] 1.4 **Human Review:** Ask the user if this task is complete and for permission to move to the next task.
-  - [ ] 1.5 **Local Commit:** Commit changes locally (`git commit -m "feat: add expanded list of canonical accessories"`) after approval.
-- [ ] 2.0 Verification
-  - [ ] 2.1 Add a new test case in `tests/migration.test.ts` (or create a new test file if appropriate) that specifically checks if `initAppData` adds these new accessories when the version is bumped.
-  - [ ] 2.2 Run the new test to confirm the migration logic works as expected.
-  - [ ] 2.3 **Verify & Test:** Run ALL unit tests `npm test -- run` and type check `npx tsc --noEmit`.
-  - [ ] 2.4 **Human Review & Local Commit**
+  - [x] 1.4 **Human Review:** Ask the user if this task is complete and for permission to move to the next task.
+  - [x] 1.5 **Local Commit:** Commit changes locally (`git commit -m "feat: add expanded list of canonical accessories"`) after approval.
+- [x] 2.0 Verification
+  - [x] 2.1 Add a new test case in `tests/migration.test.ts` (or create a new test file if appropriate) that specifically checks if `initAppData` adds these new accessories when the version is bumped.
+  - [x] 2.2 Run the new test to confirm the migration logic works as expected.
+  - [x] 2.3 **Verify & Test:** Run ALL unit tests `npm test -- run` and type check `npx tsc --noEmit`.
+  - [x] 2.4 **Human Review & Local Commit**
