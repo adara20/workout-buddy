@@ -36,10 +36,10 @@
     - "Cancel" clears `editForm` and `editingPillar` state without saving.
   - [x] 1.5 **Verify & Test:** Manually verify the UI flow (if possible) and run `npm test -- run`. Expect existing tests relying on auto-save to fail.
   - [x] 1.6 **Human Review & Local Commit**
-- [ ] 2.0 Verification & Test Updates
-  - [ ] 2.1 Update `views/Settings.test.tsx`:
+- [x] 2.0 Verification & Test Updates
+  - [x] 2.1 Update `views/Settings.test.tsx`:
     - Fix existing tests that assume immediate DB updates. They now need to find and click the "Save" button.
     - Add a new test case: "allows making multiple changes and saving once".
     - Add a new test case: "discards changes when cancel is clicked".
-  - [ ] 2.2 **Verify & Test:** Run ALL unit tests `npm test -- run` and type check `npx tsc --noEmit`. ensure all pass.
-  - [ ] 2.3 **Human Review & Local Commit**
+  - [x] 2.2 **Verify & Test:** Run ALL unit tests `npm test -- run` and type check `npx tsc --noEmit`. ensure all pass.
+  - [x] 2.3 **Human Review & Local Commit**
