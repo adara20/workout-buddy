@@ -421,13 +421,13 @@ const Settings: React.FC = () => {
                   <div className="flex gap-2 pt-2">
                     <button 
                       onClick={cancelEdit}
-                      className="flex-1 py-2.5 rounded-xl bg-gray-800 text-gray-400 text-xs font-bold uppercase flex items-center justify-center gap-2 hover:bg-gray-700 transition-colors"
+                      className="flex-1 py-2.5 px-4 rounded-xl bg-gray-800 text-gray-400 text-xs font-bold uppercase flex items-center justify-center gap-2 hover:bg-gray-700 transition-colors"
                     >
                       <X size={14} /> Cancel
                     </button>
                     <button 
                       onClick={saveEdit}
-                      className="flex-2 py-2.5 rounded-xl bg-blue-600 text-white text-xs font-bold uppercase flex items-center justify-center gap-2 hover:bg-blue-500 transition-colors shadow-lg shadow-blue-900/20"
+                      className="flex-2 py-2.5 px-6 rounded-xl bg-blue-600 text-white text-xs font-bold uppercase flex items-center justify-center gap-2 hover:bg-blue-500 transition-colors shadow-lg shadow-blue-900/20"
                     >
                       <Check size={14} /> Save
                     </button>
