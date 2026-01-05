@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { repository } from '../services/repository';
 import { initOnce } from '../db';
-import { Pillar, AppConfig, ExportPayload } from '../types';
+import { Pillar, Accessory, AppConfig, ExportPayload } from '../types';
 import { Download, Upload, Trash2, Edit2, ShieldCheck, Database, Info, Wrench, Archive, RotateCcw, Plus } from 'lucide-react';
 
 const APP_VERSION = "2.1.0";
 
 const Settings: React.FC = () => {
   const [pillars, setPillars] = useState<Pillar[]>([]);
+  const [accessories, setAccessories] = useState<Accessory[]>([]);
   const [showArchived, setShowArchived] = useState(false);
   const [config, setConfig] = useState<AppConfig | null>(null);
   const [editingPillar, setEditingPillar] = useState<string | null>(null);
@@ -35,10 +36,11 @@ const Settings: React.FC = () => {
     const p = showArchived ? await repository.getAllPillars() : await repository.getActivePillars();
     const c = await repository.getConfig();
     const sCount = await repository.getSessionCount();
-    const aCount = await repository.getAccessoryCount();
+    const accs = await repository.getAllAccessories();
     setPillars(p);
+    setAccessories(accs);
     setConfig(c || null);
-    setStats({ sessions: sCount, pillars: p.length, accessories: aCount });
+    setStats({ sessions: sCount, pillars: p.length, accessories: accs.length });
   };
 
   const updateConfigState = async (updates: Partial<AppConfig>) => {
@@ -331,6 +333,7 @@ const Settings: React.FC = () => {
                   <button 
                     onClick={() => setEditingPillar(editingPillar === p.id ? null : p.id)}
                     className="p-2 text-gray-400 active:text-white"
+                    title="Edit Pillar"
                   >
                     <Edit2 size={16} />
                   </button>
@@ -356,6 +359,33 @@ const Settings: React.FC = () => {
                       value={p.minWorkingWeight}
                       onChange={e => updatePillar({...p, minWorkingWeight: parseInt(e.target.value) || 0})}
                     />
+                  </div>
+                  <div className="col-span-2 flex flex-col gap-1.5 mt-2">
+                    <label className="text-[10px] text-gray-500 uppercase font-bold">Linked Accessories (Picks are prioritized in session)</label>
+                    <div className="flex flex-wrap gap-2">
+                      {accessories.map(acc => {
+                        const isLinked = (p.preferredAccessoryIds || []).includes(acc.id);
+                        return (
+                          <button
+                            key={acc.id}
+                            onClick={() => {
+                              const currentIds = p.preferredAccessoryIds || [];
+                              const newIds = isLinked 
+                                ? currentIds.filter(id => id !== acc.id)
+                                : [...currentIds, acc.id];
+                              updatePillar({...p, preferredAccessoryIds: newIds});
+                            }}
+                            className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase transition-all border ${
+                              isLinked 
+                                ? 'bg-blue-500 border-blue-400 text-white shadow-lg shadow-blue-500/20' 
+                                : 'bg-gray-900 border-gray-700 text-gray-500 hover:border-gray-500'
+                            }`}
+                          >
+                            {acc.name}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
               )}

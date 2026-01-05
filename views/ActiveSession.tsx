@@ -16,6 +16,7 @@ const ActiveSession: React.FC<ActiveSessionProps> = ({ initialSession, onComplet
   const [allAccessories, setAllAccessories] = useState<Accessory[]>([]);
   const [pillarsData, setPillarsData] = useState<Record<string, Pillar>>({});
   const [targetExercises, setTargetExercises] = useState(4);
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     repository.getAllAccessories().then(setAllAccessories);
@@ -174,28 +175,53 @@ const ActiveSession: React.FC<ActiveSessionProps> = ({ initialSession, onComplet
       </section>
 
       <section className="flex flex-col gap-4">
-        <div className="flex justify-between items-center">
-          <h3 className="text-gray-400 font-semibold text-xs uppercase tracking-wider">Accessory Suggestions</h3>
-          {needsMore && <span className="text-[10px] text-yellow-500 font-bold uppercase animate-pulse">ADD {targetExercises - totalExercises} MORE</span>}
-        </div>
-        <div className="flex flex-wrap gap-2">
-          {allAccessories.map(acc => {
-            const isDone = !!session.accessoriesPerformed.find(a => a.accessoryId === acc.id);
+        <div className="flex justify-between items-end">
+          <div className="flex flex-col gap-1">
+            <h3 className="text-gray-400 font-semibold text-xs uppercase tracking-wider">Accessory Suggestions</h3>
+            {needsMore && <span className="text-[10px] text-yellow-500 font-bold uppercase animate-pulse">ADD {targetExercises - totalExercises} MORE</span>}
+          </div>
+          {(() => {
+            const linkedIds = Array.from(new Set(
+              session.pillarsPerformed.flatMap(p => pillarsData[p.pillarId]?.preferredAccessoryIds || [])
+            ));
+            if (linkedIds.length === 0) return null;
             return (
-              <button
-                key={acc.id}
-                onClick={() => toggleAccessory(acc)}
-                className={`px-4 py-2 rounded-xl border text-sm font-medium transition-all flex items-center gap-2 ${
-                  isDone 
-                  ? 'bg-blue-600 border-blue-400 text-white shadow-lg shadow-blue-900/40' 
-                  : 'bg-gray-900 border-gray-800 text-gray-400'
-                }`}
+              <button 
+                onClick={() => setShowAll(!showAll)}
+                className="text-[10px] font-bold uppercase tracking-tighter px-2 py-1 rounded border border-gray-800 text-gray-500"
               >
-                {isDone ? <Check size={14} /> : <Plus size={14} />}
-                {acc.name}
+                {showAll ? 'Show Recommended' : 'Show All'}
               </button>
             );
-          })}
+          })()}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {(() => {
+            const linkedIds = Array.from(new Set(
+              session.pillarsPerformed.flatMap(p => pillarsData[p.pillarId]?.preferredAccessoryIds || [])
+            ));
+            const filtered = showAll || linkedIds.length === 0
+              ? allAccessories
+              : allAccessories.filter(acc => linkedIds.includes(acc.id));
+            
+            return filtered.map(acc => {
+              const isDone = !!session.accessoriesPerformed.find(a => a.accessoryId === acc.id);
+              return (
+                <button
+                  key={acc.id}
+                  onClick={() => toggleAccessory(acc)}
+                  className={`px-4 py-2 rounded-xl border text-sm font-medium transition-all flex items-center gap-2 ${
+                    isDone 
+                    ? 'bg-blue-600 border-blue-400 text-white shadow-lg shadow-blue-900/40' 
+                    : 'bg-gray-900 border-gray-800 text-gray-400'
+                  }`}
+                >
+                  {isDone ? <Check size={14} /> : <Plus size={14} />}
+                  {acc.name}
+                </button>
+              );
+            });
+          })()}
         </div>
       </section>
 

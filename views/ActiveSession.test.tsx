@@ -92,4 +92,38 @@ describe('ActiveSession Component', () => {
       expect(mockOnComplete).toHaveBeenCalled();
     });
   });
+
+  it('filters accessories based on pillar preferences', async () => {
+    const p1 = createMockPillar({ id: 'p1', name: 'Bench', preferredAccessoryIds: ['a1'] });
+    const a1 = createMockAccessory({ id: 'a1', name: 'Dips' });
+    const a2 = createMockAccessory({ id: 'a2', name: 'Leg Press' });
+
+    (repository.getAllPillars as any).mockResolvedValue([p1]);
+    (repository.getAllAccessories as any).mockResolvedValue([a1, a2]);
+
+    const session = createMockWorkoutSession({
+      pillarsPerformed: [{ pillarId: 'p1', name: 'Bench', weight: 100, counted: true, isPR: false, warning: false }],
+      accessoriesPerformed: []
+    });
+
+    render(<ActiveSession initialSession={session} onComplete={mockOnComplete} onCancel={mockOnCancel} />);
+
+    await waitFor(() => screen.getByText('Dips'));
+    
+    // a1 (Dips) should be visible, a2 (Leg Press) should NOT be visible
+    expect(screen.getByText('Dips')).toBeInTheDocument();
+    expect(screen.queryByText('Leg Press')).not.toBeInTheDocument();
+
+    // Toggle Show All
+    const showAllBtn = screen.getByText('Show All');
+    fireEvent.click(showAllBtn);
+
+    // Now both should be visible
+    expect(screen.getByText('Dips')).toBeInTheDocument();
+    expect(screen.getByText('Leg Press')).toBeInTheDocument();
+
+    // Toggle back
+    fireEvent.click(screen.getByText('Show Recommended'));
+    expect(screen.queryByText('Leg Press')).not.toBeInTheDocument();
+  });
 });

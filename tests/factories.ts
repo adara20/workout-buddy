@@ -13,6 +13,7 @@ export const createMockPillar = (overrides: Partial<Pillar> = {}): Pillar => ({
   lastCountedAt: Date.now() - (3 * 24 * 60 * 60 * 1000), // 3 days ago
   lastLoggedAt: Date.now() - (1 * 24 * 60 * 60 * 1000),  // 1 day ago
   isActive: true,
+  preferredAccessoryIds: [],
   ...overrides
 });
 
