@@ -248,6 +248,30 @@ describe('repository history extensions', () => {
       await repository.clearPillars();
     });
 
+    it('creates a pillar with notes', async () => {
+      const id = await repository.createPillar({ 
+        name: 'Notes Pillar', 
+        muscleGroup: 'Legs', 
+        cadenceDays: 10,
+        notes: 'These are some coaching notes'
+      });
+      const p = await repository.getPillarById(id);
+      expect(p?.notes).toBe('These are some coaching notes');
+      await repository.clearPillars();
+    });
+
+    it('updates a pillar with notes using updatePillar', async () => {
+      const id = await repository.createPillar({ 
+        name: 'Update Notes Pillar', 
+        muscleGroup: 'Push', 
+        cadenceDays: 7 
+      });
+      await repository.updatePillar(id, { notes: 'Updated note' });
+      const p = await repository.getPillarById(id);
+      expect(p?.notes).toBe('Updated note');
+      await repository.clearPillars();
+    });
+
     it('validates accessory name uniqueness', async () => {
       await repository.createAccessory('Unique Accessory');
       expect(await repository.isAccessoryNameUnique('Unique Accessory')).toBe(false);

@@ -90,11 +90,12 @@ const Settings: React.FC = () => {
     const name = (formData.get('name') as string).trim();
     const muscleGroup = formData.get('muscleGroup') as any;
     const cadenceDays = parseInt(formData.get('cadence') as string) || 7;
+    const notes = (formData.get('notes') as string || '').trim();
 
     if (!name) return setNewExerciseError('Name is required');
     if (!(await repository.isPillarNameUnique(name))) return setNewExerciseError('Exercise already exists');
 
-    await repository.createPillar({ name, muscleGroup, cadenceDays });
+    await repository.createPillar({ name, muscleGroup, cadenceDays, notes });
     setAddingPillar(false);
     loadData();
   };
@@ -318,6 +319,15 @@ const Settings: React.FC = () => {
                   className="bg-gray-900 border border-gray-700 rounded-lg p-2 text-sm text-white outline-none focus:border-blue-500"
                 />
               </div>
+              <div className="flex flex-col gap-1 col-span-2">
+                <label className="text-[10px] text-gray-500 uppercase font-bold">Notes (Optional)</label>
+                <textarea 
+                  name="notes"
+                  placeholder="Coaching cues, equipment settings..."
+                  maxLength={280}
+                  className="bg-gray-900 border border-gray-700 rounded-lg p-2 text-sm text-white outline-none focus:border-blue-500 min-h-[60px] resize-none"
+                />
+              </div>
             </div>
             {newExerciseError && <p className="text-red-400 text-[10px] font-bold uppercase">{newExerciseError}</p>}
             <div className="flex gap-2">
@@ -388,6 +398,22 @@ const Settings: React.FC = () => {
                         onChange={e => updateEditForm({ minWorkingWeight: parseInt(e.target.value) || 0 })}
                       />
                     </div>
+                  </div>
+
+                  <div className="flex flex-col gap-1">
+                    <div className="flex justify-between items-center">
+                      <label className="text-[10px] text-gray-500 uppercase font-bold">Notes</label>
+                      <span className={`text-[10px] font-bold ${(editForm.notes?.length || 0) > 250 ? 'text-yellow-500' : 'text-gray-600'}`}>
+                        {editForm.notes?.length || 0}/280
+                      </span>
+                    </div>
+                    <textarea 
+                      className="bg-gray-900 border border-gray-700 rounded p-2 text-sm outline-none focus:border-blue-500 min-h-[80px] resize-none"
+                      placeholder="Add coaching cues, tips, or equipment settings..."
+                      value={editForm.notes || ''}
+                      maxLength={280}
+                      onChange={e => updateEditForm({ notes: e.target.value })}
+                    />
                   </div>
                   
                   <div className="flex flex-col gap-1.5">

@@ -40,7 +40,7 @@ export class Repository {
     const count = await db.pillars.filter(p => p.name.trim().toLowerCase() === trimmed).count();
     return count === 0;
   }
-  async createPillar(data: Pick<Pillar, 'name' | 'muscleGroup' | 'cadenceDays'>): Promise<string> {
+  async createPillar(data: Pick<Pillar, 'name' | 'muscleGroup' | 'cadenceDays' | 'notes'>): Promise<string> {
     const newPillar: Pillar = {
       ...data,
       id: generateUUID(),

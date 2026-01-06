@@ -47,4 +47,44 @@ describe('Database Migration', () => {
     
     currentDb.close();
   });
+
+  it('successfully upgrades from v5 to v6 (adding notes field)', async () => {
+    // 1. Setup a v5 database
+    const v5Db = new Dexie(DB_NAME);
+    v5Db.version(5).stores({
+      pillars: 'id, name, muscleGroup, lastCountedAt, lastLoggedAt, isActive'
+    });
+    
+    await v5Db.open();
+    await v5Db.table('pillars').add({
+      id: 'squat',
+      name: 'Back Squat',
+      muscleGroup: 'Legs',
+      cadenceDays: 10,
+      minWorkingWeight: 135,
+      regressionFloorWeight: 115,
+      prWeight: 0,
+      lastCountedAt: null,
+      lastLoggedAt: null,
+      isActive: true
+    });
+    v5Db.close();
+
+    // 2. Open with current WorkoutDatabase (v6)
+    const currentDb = new WorkoutDatabase();
+    (currentDb as any).name = DB_NAME; 
+    
+    await currentDb.open();
+    
+    // 3. Verify pillar still exists and we can add notes
+    const pillar = await currentDb.pillars.get('squat');
+    expect(pillar).toBeDefined();
+    expect(pillar?.name).toBe('Back Squat');
+    
+    await currentDb.pillars.update('squat', { notes: 'New test note' });
+    const updatedPillar = await currentDb.pillars.get('squat');
+    expect(updatedPillar?.notes).toBe('New test note');
+    
+    currentDb.close();
+  });
 });

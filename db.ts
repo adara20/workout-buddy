@@ -82,6 +82,11 @@ export class WorkoutDatabase extends Dexie {
     this.version(5).stores({
       pillars: 'id, name, muscleGroup, lastCountedAt, lastLoggedAt, isActive'
     });
+
+    // v6: Add notes field to pillars
+    this.version(6).stores({
+      pillars: 'id, name, muscleGroup, lastCountedAt, lastLoggedAt, isActive'
+    });
   }
 
   // Convenience getter to use 'sessions' name in code but point to 'workout_sessions'
