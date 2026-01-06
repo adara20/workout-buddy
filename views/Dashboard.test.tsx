@@ -11,8 +11,19 @@ vi.mock('../services/repository', () => ({
   },
 }));
 
+vi.mock('./PillarDetailOverlay', () => ({
+  default: ({ pillar, onClose, onStartWorkout }: any) => (
+    <div data-testid="mock-overlay">
+      <span>Overlay: {pillar.name}</span>
+      <button onClick={onClose}>Close</button>
+      <button onClick={() => onStartWorkout(pillar)}>Start</button>
+    </div>
+  )
+}));
+
 describe('Dashboard Component', () => {
   const mockOnStart = vi.fn();
+  const mockOnStartSpecific = vi.fn();
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -37,6 +48,39 @@ describe('Dashboard Component', () => {
     expect(screen.getByText('Legs')).toBeInTheDocument();
     expect(screen.getByText('Push')).toBeInTheDocument();
     expect(screen.getByText('Never')).toBeInTheDocument(); // For Bench (null lastCountedAt)
+  });
+
+  it('opens overlay when a pillar is clicked', async () => {
+    const mockPillars = [createMockPillar({ name: 'Squat' })];
+    (repository.getActivePillars as any).mockResolvedValue(mockPillars);
+
+    render(<Dashboard onStart={mockOnStart} currentView="dashboard" />);
+
+    await waitFor(() => expect(screen.getByText('Squat')).toBeInTheDocument());
+    
+    fireEvent.click(screen.getByText('Squat').closest('button')!);
+
+    expect(screen.getByTestId('mock-overlay')).toBeInTheDocument();
+    expect(screen.getByText('Overlay: Squat')).toBeInTheDocument();
+  });
+
+  it('calls onStartSpecificWorkout when start is clicked in overlay', async () => {
+    const mockPillars = [createMockPillar({ name: 'Squat' })];
+    (repository.getActivePillars as any).mockResolvedValue(mockPillars);
+
+    render(<Dashboard 
+      onStart={mockOnStart} 
+      onStartSpecificWorkout={mockOnStartSpecific} 
+      currentView="dashboard" 
+    />);
+
+    await waitFor(() => expect(screen.getByText('Squat')).toBeInTheDocument());
+    fireEvent.click(screen.getByText('Squat').closest('button')!);
+
+    fireEvent.click(screen.getByText('Start'));
+
+    expect(mockOnStartSpecific).toHaveBeenCalledWith(mockPillars[0]);
+    expect(screen.queryByTestId('mock-overlay')).not.toBeInTheDocument();
   });
 
   it('calls onStart when START WORKOUT button is clicked', async () => {
