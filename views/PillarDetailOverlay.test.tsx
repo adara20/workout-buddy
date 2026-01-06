@@ -8,6 +8,7 @@ import { createMockPillar, createMockAccessory } from '../tests/factories';
 vi.mock('../services/repository', () => ({
   repository: {
     getAllAccessories: vi.fn(),
+    getSessionsByPillar: vi.fn(),
   },
 }));
 
@@ -30,6 +31,7 @@ describe('PillarDetailOverlay', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     (repository.getAllAccessories as any).mockResolvedValue(mockAccessories);
+    (repository.getSessionsByPillar as any).mockResolvedValue([]);
   });
 
   it('renders pillar details correctly', async () => {
@@ -88,5 +90,38 @@ describe('PillarDetailOverlay', () => {
     render(<PillarDetailOverlay pillar={pillarWithoutNotes} onClose={() => {}} onStartWorkout={() => {}} />);
 
     expect(screen.queryByText(/Coaching Cues/i)).not.toBeInTheDocument();
+  });
+
+  it('displays the progression trend chart when history is present', async () => {
+    const mockHistory = [
+      { 
+        date: 1000, 
+        pillarsPerformed: [{ pillarId: 'p1', name: 'P1', weight: 100, counted: true, isPR: false, warning: false }],
+        accessoriesPerformed: []
+      },
+      { 
+        date: 2000, 
+        pillarsPerformed: [{ pillarId: 'p1', name: 'P1', weight: 110, counted: true, isPR: true, warning: false }],
+        accessoriesPerformed: []
+      }
+    ];
+    (repository.getSessionsByPillar as any).mockResolvedValue(mockHistory);
+
+    render(<PillarDetailOverlay pillar={mockPillar} onClose={() => {}} onStartWorkout={() => {}} />);
+
+    expect(screen.getByText(/Progression Trend/i)).toBeInTheDocument();
+    await waitFor(() => {
+      // The chart renders an SVG. We can check for existence of trending up icon or chart container
+      expect(screen.queryByText(/Needs more history/i)).not.toBeInTheDocument();
+    });
+  });
+
+  it('displays placeholder when history is insufficient', async () => {
+    (repository.getSessionsByPillar as any).mockResolvedValue([]);
+    render(<PillarDetailOverlay pillar={mockPillar} onClose={() => {}} onStartWorkout={() => {}} />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Needs more history to chart/i)).toBeInTheDocument();
+    });
   });
 });

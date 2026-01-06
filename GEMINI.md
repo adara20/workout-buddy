@@ -14,6 +14,7 @@ You are a senior software engineer specializing in React, TypeScript, and local-
     *   Run `npx tsc --noEmit` to verify type safety after major changes.
     *   Never break the "Golden Path" integration test.
     *   **Coverage Mandate**: Every PR or major feature task MUST include a coverage report check (`npx vitest run --coverage`). Aim for >85% overall and >80% for modified files.
+    *   **Verification Rigor**: Unit test new components in isolation (`Component.test.tsx`) before integrating them into parent views. Run type-checks after EVERY replacement or write operation.
     *   **Post-Implementation Workflow**: 
         1. After the final commit, ask if a PR should be created.
         2. Upon approval, push to a remote branch.

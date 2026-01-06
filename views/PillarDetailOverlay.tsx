@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Pillar, Accessory } from '../types';
+import { Pillar, Accessory, WorkoutSession } from '../types';
 import { repository } from '../services/repository';
-import { X, Trophy, Target, Dumbbell, Play, ClipboardList } from 'lucide-react';
+import { X, Trophy, Target, Dumbbell, Play, ClipboardList, TrendingUp } from 'lucide-react';
 import { MarkdownLite } from './MarkdownLite';
+import { extractPillarHistory, ChartDataPoint } from '../services/stats';
+import PillarTrendChart from './PillarTrendChart';
 
 interface PillarDetailOverlayProps {
   pillar: Pillar;
@@ -12,22 +14,30 @@ interface PillarDetailOverlayProps {
 
 const PillarDetailOverlay: React.FC<PillarDetailOverlayProps> = ({ pillar, onClose, onStartWorkout }) => {
   const [accessories, setAccessories] = useState<Accessory[]>([]);
+  const [history, setHistory] = useState<ChartDataPoint[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchAccessories = async () => {
+    const fetchData = async () => {
       setLoading(true);
       try {
-        const all = await repository.getAllAccessories();
-        const filtered = all.filter(acc => (pillar.preferredAccessoryIds || []).includes(acc.id));
-        setAccessories(filtered);
+        const [allAccs, sessions] = await Promise.all([
+          repository.getAllAccessories(),
+          repository.getSessionsByPillar(pillar.id)
+        ]);
+        
+        const filteredAccs = allAccs.filter(acc => (pillar.preferredAccessoryIds || []).includes(acc.id));
+        setAccessories(filteredAccs);
+        
+        const chartData = extractPillarHistory(sessions, pillar.id);
+        setHistory(chartData);
       } catch (err) {
-        console.error('Failed to fetch accessories:', err);
+        console.error('Failed to fetch data:', err);
       } finally {
         setLoading(false);
       }
     };
-    fetchAccessories();
+    fetchData();
   }, [pillar]);
 
   return (
@@ -80,6 +90,14 @@ const PillarDetailOverlay: React.FC<PillarDetailOverlayProps> = ({ pillar, onClo
               </div>
             </div>
           </div>
+
+          <section className="flex flex-col gap-4">
+            <div className="flex items-center gap-2 text-gray-500">
+              <TrendingUp size={16} />
+              <h3 className="text-xs font-bold uppercase tracking-widest">Progression Trend</h3>
+            </div>
+            <PillarTrendChart data={history} />
+          </section>
 
           {pillar.notes && (
             <section className="bg-blue-500/5 border border-blue-500/10 p-5 rounded-3xl flex flex-col gap-3">

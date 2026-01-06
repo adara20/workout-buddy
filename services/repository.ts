@@ -202,9 +202,10 @@ export class Repository {
     }
   }
   async getSessionsByPillar(pillarId: string): Promise<WorkoutSession[]> {
-    return db.table('workout_sessions').filter(s => 
+    const sessions = await db.table('workout_sessions').filter(s => 
       s.pillarsPerformed.some(p => p.pillarId === pillarId)
     ).toArray();
+    return sessions.sort((a, b) => a.date - b.date);
   }
   async getSessionCount(): Promise<number> {
     return db.table('workout_sessions').count();
