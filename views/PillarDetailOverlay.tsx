@@ -113,7 +113,7 @@ const PillarDetailOverlay: React.FC<PillarDetailOverlayProps> = ({ pillar, onClo
               className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl flex items-center justify-center gap-3 shadow-xl shadow-blue-900/40 active:scale-[0.98] transition-all"
             >
               <Play size={20} fill="currentColor" />
-              START SESSION WITH {pillar.name.toUpperCase()}
+              START SESSION
             </button>
           </footer>
         </div>

@@ -68,7 +68,7 @@ describe('PillarDetailOverlay', () => {
     const onStart = vi.fn();
     render(<PillarDetailOverlay pillar={mockPillar} onClose={() => {}} onStartWorkout={onStart} />);
 
-    const startBtn = screen.getByText(/START SESSION WITH BENCH PRESS/i);
+    const startBtn = screen.getByText(/START SESSION/i);
     await userEvent.click(startBtn);
 
     expect(onStart).toHaveBeenCalledWith(mockPillar);
