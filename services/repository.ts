@@ -235,6 +235,10 @@ export class Repository {
     return res;
   }
 
+  async updateLastSyncedAt(timestamp: number): Promise<void> {
+    await db.config.update('main', { lastSyncedAt: timestamp });
+  }
+
   // Database actions
   async deleteDatabase(): Promise<void> {
     return db.delete();
