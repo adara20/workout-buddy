@@ -13,6 +13,7 @@ export interface Pillar {
   lastLoggedAt: number | null;  // Timestamp (epoch ms)
   isActive?: boolean;
   preferredAccessoryIds?: string[];
+  notes?: string;
 }
 
 export interface Accessory {

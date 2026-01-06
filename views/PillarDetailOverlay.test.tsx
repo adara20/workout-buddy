@@ -73,4 +73,20 @@ describe('PillarDetailOverlay', () => {
 
     expect(onStart).toHaveBeenCalledWith(mockPillar);
   });
+
+  it('displays notes when present', async () => {
+    const pillarWithNotes = { ...mockPillar, notes: 'Stay tight and **drive** through heels' };
+    render(<PillarDetailOverlay pillar={pillarWithNotes} onClose={() => {}} onStartWorkout={() => {}} />);
+
+    expect(screen.getByText(/Coaching Cues/i)).toBeInTheDocument();
+    expect(screen.getByText(/Stay tight and/i)).toBeInTheDocument();
+    expect(screen.getByText('drive')).toBeInTheDocument(); // Bold text should be rendered
+  });
+
+  it('does not display the notes section when absent', () => {
+    const pillarWithoutNotes = { ...mockPillar, notes: '' };
+    render(<PillarDetailOverlay pillar={pillarWithoutNotes} onClose={() => {}} onStartWorkout={() => {}} />);
+
+    expect(screen.queryByText(/Coaching Cues/i)).not.toBeInTheDocument();
+  });
 });

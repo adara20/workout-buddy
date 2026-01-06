@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Pillar, Accessory } from '../types';
 import { repository } from '../services/repository';
-import { X, Trophy, Target, Dumbbell, Play } from 'lucide-react';
+import { X, Trophy, Target, Dumbbell, Play, ClipboardList } from 'lucide-react';
+import { MarkdownLite } from './MarkdownLite';
 
 interface PillarDetailOverlayProps {
   pillar: Pillar;
@@ -79,6 +80,16 @@ const PillarDetailOverlay: React.FC<PillarDetailOverlayProps> = ({ pillar, onClo
               </div>
             </div>
           </div>
+
+          {pillar.notes && (
+            <section className="bg-blue-500/5 border border-blue-500/10 p-5 rounded-3xl flex flex-col gap-3">
+              <div className="flex items-center gap-2 text-blue-400">
+                <ClipboardList size={16} />
+                <h3 className="text-[10px] font-black uppercase tracking-[0.2em]">Coaching Cues</h3>
+              </div>
+              <MarkdownLite text={pillar.notes} />
+            </section>
+          )}
 
           <section>
             <div className="flex items-center gap-2 mb-4">
