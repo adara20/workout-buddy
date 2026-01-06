@@ -14,6 +14,13 @@ You are a senior software engineer specializing in React, TypeScript, and local-
     *   Run `npx tsc --noEmit` to verify type safety after major changes.
     *   Never break the "Golden Path" integration test.
     *   **Coverage Mandate**: Every PR or major feature task MUST include a coverage report check (`npx vitest run --coverage`). Aim for >85% overall and >80% for modified files.
+    *   **Post-Implementation Workflow**: 
+        1. After the final commit, ask if a PR should be created.
+        2. Upon approval, push to a remote branch.
+        3. Once the user confirms the PR is merged: 
+           - Delete the local branch.
+           - Delete the remote branch (`git push origin --delete [branch]`).
+           - Remove task artifacts (`tasks/prd-*.md`, `tasks/tasks-*.md`).
 
 ## Technical & Domain Context
 - **Domain Logic**:
