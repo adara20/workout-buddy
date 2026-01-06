@@ -43,4 +43,30 @@ describe('Error Handling and Edge Cases', () => {
     
     vi.unstubAllGlobals();
   });
+
+  it('shows storage volatile warning on Dashboard when storage is not persisted', async () => {
+    const { repository } = await import('../services/repository');
+    vi.mock('../services/repository', () => ({
+      repository: {
+        getConfig: vi.fn(),
+        getActivePillars: vi.fn().mockResolvedValue([]),
+        setSyncListener: vi.fn()
+      }
+    }));
+
+    (initOnce as any).mockResolvedValue(undefined);
+    (repository.getConfig as any).mockResolvedValue({ 
+        id: 'main', 
+        targetExercisesPerSession: 4, 
+        storagePersisted: false 
+    });
+
+    render(<App />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Storage is volatile/i)).toBeInTheDocument();
+    });
+    
+    expect(screen.getByText(/Back Up/i)).toBeInTheDocument();
+  });
 });

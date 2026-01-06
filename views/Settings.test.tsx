@@ -293,4 +293,17 @@ describe('Settings Component', () => {
       expect(repository.createAccessory).toHaveBeenCalledWith('New Curls');
     });
   });
+
+  it('handles unavailable storage estimation safely', async () => {
+    // navigator.storage.estimate might return 0 or empty object
+    (navigator.storage as any).estimate = vi.fn().mockResolvedValue({});
+    (navigator.storage as any).persisted = vi.fn().mockResolvedValue(false);
+
+    render(<Settings />);
+    
+    await waitFor(() => {
+      expect(screen.getByText('0.00 MB')).toBeInTheDocument();
+      expect(screen.getByText('Best Effort')).toBeInTheDocument();
+    });
+  });
 });
