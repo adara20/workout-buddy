@@ -337,10 +337,262 @@ describe('repository history extensions', () => {
 
           }
 
-        });
+            });
 
-      });
+          });
 
-    });
+        
+
+          describe('edge cases and concurrency', () => {
+
+            it('handles "Get" methods with empty database', async () => {
+
+              await repository.clearPillars();
+
+              await repository.clearAccessories();
+
+              await repository.clearSessions();
+
+              
+
+              expect(await repository.getAllPillars()).toEqual([]);
+
+              expect(await repository.getActivePillars()).toEqual([]);
+
+              expect(await repository.getAllAccessories()).toEqual([]);
+
+              expect(await repository.getAllSessions()).toEqual([]);
+
+              expect(await repository.getSessionCount()).toBe(0);
+
+              expect(await repository.getPillarById('non-existent')).toBeUndefined();
+
+            });
+
+        
+
+            it('handles concurrent pillar updates safely', async () => {
+
+              const pId = 'concurrent-test';
+
+              await repository.putPillar({
+
+                id: pId, name: 'Initial', muscleGroup: 'Push', cadenceDays: 5,
+
+                minWorkingWeight: 10, regressionFloorWeight: 5, prWeight: 0,
+
+                lastCountedAt: null, lastLoggedAt: null
+
+              });
+
+        
+
+              // Fire multiple updates in parallel
+
+              await Promise.all([
+
+                repository.updatePillar(pId, { name: 'Update 1' }),
+
+                repository.updatePillar(pId, { notes: 'Note 2' }),
+
+                repository.updatePillar(pId, { minWorkingWeight: 50 })
+
+              ]);
+
+        
+
+              const final = await repository.getPillarById(pId);
+
+              // All fields should ideally be updated (Dexie handles this via internal transactions)
+
+              expect(final?.name).toBe('Update 1');
+
+              expect(final?.notes).toBe('Note 2');
+
+              expect(final?.minWorkingWeight).toBe(50);
+
+            });
+
+        
+
+            it('handles recalculatePillarStats with no sessions', async () => {
+
+                const pId = 'no-sessions-test';
+
+                await repository.putPillar({
+
+                    id: pId, name: 'No Sessions', muscleGroup: 'Push', cadenceDays: 5,
+
+                    minWorkingWeight: 10, regressionFloorWeight: 5, prWeight: 100,
+
+                    lastCountedAt: 500, lastLoggedAt: 500
+
+                });
+
+        
+
+                // Trigger recalculation for a pillar with no actual session data
+
+                // We need to use a private method, so we cast to any or trigger via a delete
+
+                const sId = await repository.addSession({ 
+
+                    date: 1000, 
+
+                    pillarsPerformed: [{ pillarId: pId, name: 'P', weight: 150, counted: true, isPR: true, warning: false }],
+
+                    accessoriesPerformed: []
+
+                });
+
+                
+
+                await repository.deleteSession(sId);
+
+                
+
+                        const pillar = await repository.getPillarById(pId);
+
+                
+
+                        expect(pillar?.prWeight).toBe(0);
+
+                
+
+                        expect(pillar?.lastCountedAt).toBeNull();
+
+                
+
+                    });
+
+                
+
+                
+
+                
+
+                    it('triggers sync listener on changes', async () => {
+
+                
+
+                        const listener = vi.fn().mockResolvedValue(undefined);
+
+                
+
+                        repository.setSyncListener(listener);
+
+                
+
+                        
+
+                
+
+                        await repository.createAccessory('Sync Test Acc');
+
+                
+
+                        expect(listener).toHaveBeenCalled();
+
+                
+
+                        
+
+                
+
+                        repository.setSyncListener(null as any);
+
+                
+
+                    });
+
+                
+
+                
+
+                
+
+                    it('handles clear methods', async () => {
+
+                
+
+                        await repository.createPillar({ name: 'Clear Me', muscleGroup: 'Push', cadenceDays: 7 });
+
+                
+
+                        await repository.clearPillars();
+
+                
+
+                        expect(await repository.getAllPillars()).toHaveLength(0);
+
+                
+
+                        
+
+                
+
+                        await repository.createAccessory('Clear Me Acc');
+
+                
+
+                        await repository.clearAccessories();
+
+                
+
+                        expect(await repository.getAllAccessories()).toHaveLength(0);
+
+                
+
+                    });
+
+                
+
+                
+
+                
+
+                    it('runs transactions correctly', async () => {
+
+                
+
+                        const result = await repository.runTransaction('rw', ['pillars'], async () => {
+
+                
+
+                            await repository.createPillar({ name: 'Tx Pillar', muscleGroup: 'Push', cadenceDays: 7 });
+
+                
+
+                            return 'done';
+
+                
+
+                        });
+
+                
+
+                        expect(result).toBe('done');
+
+                
+
+                        expect(await repository.getAllPillars()).toHaveLength(1);
+
+                
+
+                    });
+
+                
+
+                  });
+
+                
+
+                });
+
+                
+
+                
+
+        
 
     

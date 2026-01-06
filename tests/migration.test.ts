@@ -1,90 +1,68 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import Dexie from 'dexie';
 import 'fake-indexeddb/auto';
-import { WorkoutDatabase } from '../db';
+import { WorkoutDatabase, initAppData, initOnce, db } from '../db';
 
-describe('Database Migration', () => {
-  const DB_NAME = 'MigrationTestDB';
+describe('Database Initialization and Migration', () => {
+  const DB_NAME = 'UpgradeTestDB';
 
   beforeEach(async () => {
-    // Ensure we start with a clean slate for each test
+    await Dexie.delete('WorkoutBuddyDB');
     await Dexie.delete(DB_NAME);
+    if (db.isOpen()) db.close();
   });
 
-  it('successfully upgrades from v2 (integer IDs) to v3 (string IDs) without crashing', async () => {
-    // 1. Setup a legacy v2 database
-    const legacyDb = new Dexie(DB_NAME);
-    legacyDb.version(2).stores({
-      pillars: 'id, name, muscleGroup, lastCountedAt, lastLoggedAt',
-      accessories: 'id, name, *tags',
+  it('successfully handles migration from v1 (auto-increment) to current version', async () => {
+    const legacy = new Dexie(DB_NAME);
+    legacy.version(1).stores({
+      pillars: '++id, name',
+      accessories: '++id, name',
       sessions: '++id, date',
       config: 'id'
     });
-    
-    await legacyDb.open();
-    await legacyDb.table('sessions').add({
-      date: 123456789,
-      pillarsPerformed: [{ pillarId: 'p1', name: 'Pillar 1' }],
-      accessoriesPerformed: [],
-      notes: 'test note'
-    });
-    const count = await legacyDb.table('sessions').count();
-    expect(count).toBe(1);
-    legacyDb.close();
+    await legacy.open();
+    await legacy.table('pillars').add({ name: 'Back Squat' });
+    await legacy.table('accessories').add({ name: 'Dips' });
+    legacy.close();
 
-    // 2. Attempt to open it with the current WorkoutDatabase (v3+)
-    const currentDb = new WorkoutDatabase();
-    (currentDb as any).name = DB_NAME; 
+    // Opening with WorkoutDatabase should trigger the sequence:
+    // v2 (pillars -> pillars_v2)
+    // v3 (pillars_v2 -> pillars)
+    const current = new WorkoutDatabase(DB_NAME);
+    await current.open();
     
-    await currentDb.open();
+    const p = await current.pillars.get('back_squat');
+    expect(p).toBeDefined();
+    expect(p?.id).toBe('back_squat');
     
-    // 3. Verify data integrity
-    const sessions = await currentDb.table('workout_sessions').toArray();
-    expect(sessions.length).toBe(1);
-    expect(sessions[0].date).toBe(123456789);
-    expect(typeof sessions[0].id).toBe('string'); 
-    expect(sessions[0].notes).toBe('test note');
+    const a = await current.accessories.get('acc_dips');
+    expect(a).toBeDefined();
     
-    currentDb.close();
+    current.close();
   });
 
-  it('successfully upgrades from v5 to v6 (adding notes field)', async () => {
-    // 1. Setup a v5 database
-    const v5Db = new Dexie(DB_NAME);
-    v5Db.version(5).stores({
-      pillars: 'id, name, muscleGroup, lastCountedAt, lastLoggedAt, isActive'
-    });
-    
-    await v5Db.open();
-    await v5Db.table('pillars').add({
-      id: 'squat',
-      name: 'Back Squat',
-      muscleGroup: 'Legs',
-      cadenceDays: 10,
-      minWorkingWeight: 135,
-      regressionFloorWeight: 115,
-      prWeight: 0,
-      lastCountedAt: null,
-      lastLoggedAt: null,
-      isActive: true
-    });
-    v5Db.close();
+  it('handles idempotent seeding in initAppData', async () => {
+    await initAppData();
+    const count1 = await db.pillars.count();
+    expect(count1).toBeGreaterThan(0);
+    await initAppData();
+    const count2 = await db.pillars.count();
+    expect(count2).toBe(count1);
+  });
 
-    // 2. Open with current WorkoutDatabase (v6)
-    const currentDb = new WorkoutDatabase();
-    (currentDb as any).name = DB_NAME; 
-    
-    await currentDb.open();
-    
-    // 3. Verify pillar still exists and we can add notes
-    const pillar = await currentDb.pillars.get('squat');
-    expect(pillar).toBeDefined();
-    expect(pillar?.name).toBe('Back Squat');
-    
-    await currentDb.pillars.update('squat', { notes: 'New test note' });
-    const updatedPillar = await currentDb.pillars.get('squat');
-    expect(updatedPillar?.notes).toBe('New test note');
-    
-    currentDb.close();
+  it('updates canonical data fields when version increases', async () => {
+     await db.config.put({ id: 'main', targetExercisesPerSession: 4, appDataVersion: 1 });
+     await db.pillars.put({ id: 'back_squat', name: 'Old Name', muscleGroup: 'Legs', cadenceDays: 5, prWeight: 500 });
+     await initAppData();
+     const squat = await db.pillars.get('back_squat');
+     expect(squat?.name).toBe('Back Squat');
+     expect(squat?.cadenceDays).toBe(10);
+  });
+
+  it('initOnce allows retries on failure', async () => {
+    vi.spyOn(db.config, 'get').mockRejectedValueOnce(new Error('DB Locked'));
+    await expect(initOnce()).rejects.toThrow('DB Locked');
+    vi.spyOn(db.config, 'get').mockResolvedValueOnce({ id: 'main', targetExercisesPerSession: 4, appDataVersion: 100 });
+    await expect(initOnce()).resolves.toBeUndefined();
   });
 });

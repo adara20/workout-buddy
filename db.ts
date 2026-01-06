@@ -12,8 +12,8 @@ export class WorkoutDatabase extends Dexie {
   sessions!: Table<WorkoutSession, string>;
   config!: Table<AppConfig, string>;
 
-  constructor() {
-    super('WorkoutBuddyDB');
+  constructor(name = 'WorkoutBuddyDB') {
+    super(name);
     
     // Version 1: Initial development schema
     this.version(1).stores({
@@ -25,51 +25,52 @@ export class WorkoutDatabase extends Dexie {
 
     // Version 2: Stable string IDs and consistent timestamps
     this.version(2).stores({
-      pillars: 'id, name, muscleGroup, lastCountedAt, lastLoggedAt',
-      accessories: 'id, name, *tags',
+      pillars: null, // delete v1 auto-increment table
+      accessories: null, // delete v1 auto-increment table
+      pillars_v2: 'id, name, muscleGroup, lastCountedAt, lastLoggedAt',
+      accessories_v2: 'id, name, *tags',
       sessions: '++id, date',
       config: 'id'
     }).upgrade(async tx => {
-      // Migrate numeric pillar IDs to string IDs if they exist
+      // Migrate numeric pillar IDs to string IDs
       const pillars = await tx.table('pillars').toArray();
+      const newPillarsTable = tx.table('pillars_v2');
       for (const p of pillars) {
-        if (typeof p.id === 'number') {
-          const stringId = mapLegacyPillarNameToId(p.name);
-          if (stringId) {
-            const newPillar = { ...p, id: stringId };
-            await tx.table('pillars').add(newPillar);
-            await tx.table('pillars').delete(p.id);
-          }
-        }
+        const stringId = typeof p.id === 'number' ? mapLegacyPillarNameToId(p.name) : p.id;
+        await newPillarsTable.add({ ...p, id: stringId });
       }
       // Migrate accessories
       const accs = await tx.table('accessories').toArray();
+      const newAccsTable = tx.table('accessories_v2');
       for (const a of accs) {
-        if (typeof a.id === 'number') {
-          const stringId = `acc_${a.name.toLowerCase().replace(/\s+/g, '_')}`;
-          const newAcc = { ...a, id: stringId };
-          await tx.table('accessories').add(newAcc);
-          await tx.table('accessories').delete(a.id);
-        }
+        const stringId = typeof a.id === 'number' ? `acc_${a.name.toLowerCase().replace(/\s+/g, '_')}` : a.id;
+        await newAccsTable.add({ ...a, id: stringId });
       }
     });
 
-    // v3: Add workout_sessions, keep sessions for migration
+    // Version 3: Move back to original names but with new primary key definition
     this.version(3).stores({
+      pillars_v2: null,
+      accessories_v2: null,
       pillars: 'id, name, muscleGroup, lastCountedAt, lastLoggedAt',
       accessories: 'id, name, *tags',
-      sessions: '++id, date', // Keep legacy table for migration
+      sessions: '++id, date',
       workout_sessions: 'id, date',
       config: 'id'
     }).upgrade(async tx => {
+      // Restore pillars
+      const p2 = await tx.table('pillars_v2').toArray();
+      for (const p of p2) await tx.table('pillars').add(p);
+      
+      // Restore accessories
+      const a2 = await tx.table('accessories_v2').toArray();
+      for (const a of a2) await tx.table('accessories').add(a);
+
+      // Existing v3 logic: sessions to workout_sessions
       const oldSessions = await tx.table('sessions').toArray();
       const newSessionsTable = tx.table('workout_sessions');
       for (const s of oldSessions) {
-        const newSession = {
-          ...s,
-          id: generateUUID() // Assign new UUID
-        };
-        await newSessionsTable.add(newSession);
+        await newSessionsTable.add({ ...s, id: generateUUID() });
       }
     });
 
@@ -153,11 +154,16 @@ let initPromise: Promise<void> | null = null;
  * Singleton initialization guard
  */
 export async function initOnce() {
-  if (!initPromise) initPromise = initAppData();
-  return initPromise;
+  try {
+    if (!initPromise) initPromise = initAppData();
+    return await initPromise;
+  } catch (err) {
+    initPromise = null; // Allow retry on next call
+    throw err;
+  }
 }
 
-async function initAppData() {
+export async function initAppData() {
   let config = await db.config.get('main');
   
   if (!config) {

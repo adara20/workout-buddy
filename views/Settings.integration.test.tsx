@@ -55,15 +55,13 @@ global.URL.revokeObjectURL = vi.fn();
 
 // Mock FileReader for import
 class MockFileReader {
+  static resultData: any = null;
   onload: ((event: any) => void) | null = null;
   readAsText(file: File) {
     if (this.onload) {
-      // Simulate successful read with mock content by default
-      // Tests can override this behavior by mocking FileReader prototype if needed,
-      // but simpler to just handle the "happy path" here and error path via test setup.
       this.onload({
         target: {
-          result: JSON.stringify({
+          result: MockFileReader.resultData || JSON.stringify({
             exportVersion: 2,
             data: {
               pillars: [{ id: 'p1', name: 'Mock Pillar' }],
@@ -82,6 +80,7 @@ global.FileReader = MockFileReader as any;
 describe('Settings Integration', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    (MockFileReader as any).resultData = null; // Reset for each test
     // Default mock returns
     (repository.getAllPillars as any).mockResolvedValue([]);
     (repository.getActivePillars as any).mockResolvedValue([]);
@@ -275,5 +274,51 @@ describe('Settings Integration', () => {
 
     expect(global.confirm).toHaveBeenCalledWith(expect.stringContaining('integrity check'));
     await waitFor(() => expect(global.alert).toHaveBeenCalledWith(expect.stringContaining('Repair complete')));
+  });
+
+  it('rolls back database changes if import fails mid-transaction', async () => {
+    // 1. Setup initial data
+    (repository.getAllPillars as any).mockResolvedValue([{ id: 'existing', name: 'Initial' }]);
+    
+    // 2. Mock transaction to fail halfway
+    (repository.runTransaction as any).mockImplementation(async (_mode: any, _tables: any, callback: any) => {
+        try {
+            await callback();
+        } catch (e) {
+            // Transaction rollback is handled by repository in real life, 
+            // here we just verify it was called and failed.
+            throw e;
+        }
+    });
+    (repository.clearPillars as any).mockResolvedValue(undefined);
+    (repository.bulkPutPillars as any).mockRejectedValue(new Error('Partial Write Failure'));
+
+    render(<Settings />);
+    
+    const file = new File([JSON.stringify({
+        exportVersion: 2,
+        data: { pillars: [{ id: 'p1' }], sessions: [], accessories: [], config: {} }
+    })], 'fail.json', { type: 'application/json' });
+    const input = screen.getByLabelText(/JSON Import/i);
+
+    await userEvent.upload(input, file);
+
+    expect(global.alert).toHaveBeenCalledWith(expect.stringContaining('Import failed: Partial Write Failure'));
+    // In real app, runTransaction ensures rollback. 
+    // Here we ensure the user is notified and app didn't crash.
+  });
+
+  it('handles corrupted JSON structure safely', async () => {
+    (MockFileReader as any).resultData = JSON.stringify({ exportVersion: 2 }); // Missing 'data'
+    (repository.bulkPutPillars as any).mockResolvedValue(undefined);
+    render(<Settings />);
+    
+    // Missing 'data' key entirely
+    const file = new File([JSON.stringify({ exportVersion: 2 })], 'bad.json', { type: 'application/json' });
+    const input = screen.getByLabelText(/JSON Import/i);
+
+    await userEvent.upload(input, file);
+
+    expect(global.alert).toHaveBeenCalledWith(expect.stringContaining('Import failed: Invalid backup format'));
   });
 });

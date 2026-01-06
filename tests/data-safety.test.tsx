@@ -122,4 +122,24 @@ describe('Data Safety & Sync Integration', () => {
     const finalConfig = await repository.getConfig();
     expect(finalConfig?.targetExercisesPerSession).toBe(originalConfig?.targetExercisesPerSession);
   });
+
+  it('rolls back all changes if a transaction fails halfway', async () => {
+    // 1. Seed with data
+    await repository.createPillar({ name: 'Survivor', muscleGroup: 'Push', cadenceDays: 7 });
+    
+    // 2. Attempt a transaction that clears then fails
+    try {
+        await repository.runTransaction('rw', ['pillars'], async () => {
+            await repository.clearPillars();
+            throw new Error('Atomic Failure');
+        });
+    } catch (e) {
+        // Expected
+    }
+
+    // 3. Verify 'Survivor' pillar still exists (it should have been restored by rollback)
+    const pillars = await repository.getAllPillars();
+    expect(pillars.length).toBe(1);
+    expect(pillars[0].name).toBe('Survivor');
+  });
 });
