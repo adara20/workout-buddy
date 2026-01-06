@@ -293,10 +293,54 @@ describe('repository history extensions', () => {
       await repository.clearPillars();
     });
 
-    it('ensures accessories also handle case-insensitive uniqueness', async () => {
-      await repository.createAccessory('Case Accessory');
-      expect(await repository.isAccessoryNameUnique('case accessory')).toBe(false);
-      await repository.clearAccessories();
+        it('ensures accessories also handle case-insensitive uniqueness', async () => {
+
+          await repository.createAccessory('Case Accessory');
+
+          expect(await repository.isAccessoryNameUnique('case accessory')).toBe(false);
+
+          await repository.clearAccessories();
+
+        });
+
+      });
+
+    
+
+      describe('configuration', () => {
+
+        it('can update and retrieve lastSyncedAt', async () => {
+
+          const initialConfig = await repository.getConfig();
+
+          const testTimestamp = 123456789;
+
+          
+
+          if (initialConfig) {
+
+            await repository.updateLastSyncedAt(testTimestamp);
+
+            const updatedConfig = await repository.getConfig();
+
+            expect(updatedConfig?.lastSyncedAt).toBe(testTimestamp);
+
+          } else {
+
+            // Handle case where config might not exist in test env yet
+
+            await repository.putConfig({ id: 'main', targetExercisesPerSession: 4, lastSyncedAt: testTimestamp });
+
+            const newConfig = await repository.getConfig();
+
+            expect(newConfig?.lastSyncedAt).toBe(testTimestamp);
+
+          }
+
+        });
+
+      });
+
     });
-  });
-});
+
+    

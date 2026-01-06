@@ -46,6 +46,8 @@ export async function uploadToCloud(): Promise<void> {
     const errorText = await response.text();
     throw new Error(`Upload failed: ${response.status} ${response.statusText} - ${errorText}`);
   }
+
+  await repository.updateLastSyncedAt(data.updatedAt);
 }
 
 /**
@@ -94,6 +96,8 @@ export async function downloadFromCloud(): Promise<boolean> {
       await repository.putConfig({ ...data.config, id: 'main' });
     }
   });
+
+  await repository.updateLastSyncedAt(data.updatedAt || Date.now());
 
   return true;
 }

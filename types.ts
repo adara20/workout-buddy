@@ -54,6 +54,7 @@ export interface AppConfig {
   targetExercisesPerSession: number;
   seededAt?: number;
   lastExportAt?: number;
+  lastSyncedAt?: number;
   appDataVersion?: number;
   storagePersisted?: boolean;
   deviceId?: string;

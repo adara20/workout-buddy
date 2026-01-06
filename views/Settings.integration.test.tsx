@@ -4,6 +4,19 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import Settings from './Settings';
 import { repository } from '../services/repository';
 
+// Mock auth and cloud services
+vi.mock('../services/auth', () => ({
+  onAuthChange: vi.fn().mockReturnValue(() => {}),
+  signIn: vi.fn(),
+  signUp: vi.fn(),
+  signOut: vi.fn(),
+}));
+
+vi.mock('../services/cloud-rest', () => ({
+  uploadToCloud: vi.fn(),
+  downloadFromCloud: vi.fn(),
+}));
+
 // Mock db
 vi.mock('../db', () => ({
   initOnce: vi.fn().mockResolvedValue(undefined)

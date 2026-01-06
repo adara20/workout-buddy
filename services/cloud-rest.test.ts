@@ -17,7 +17,8 @@ vi.mock('./repository', () => ({
     bulkPutAccessories: vi.fn(),
     clearSessions: vi.fn(),
     bulkPutSessions: vi.fn(),
-    putConfig: vi.fn()
+    putConfig: vi.fn(),
+    updateLastSyncedAt: vi.fn()
   }
 }));
 
