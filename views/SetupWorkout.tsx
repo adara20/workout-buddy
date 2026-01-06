@@ -32,15 +32,13 @@ const SetupWorkout: React.FC<SetupWorkoutProps> = ({
     const now = Date.now();
     let sorted = getRecommendedPillars(allPillars, selectedFocus, now);
     
-    let initialSelection = sorted.slice(0, numPillars);
+    let initialSelection: Pillar[];
 
-    // If we have a preselected pillar, ensure it is in the selection
+    // If we have a preselected pillar, it should be the EXCLUSIVE initial selection
     if (preselectedPillar) {
-      if (!initialSelection.find(p => p.id === preselectedPillar.id)) {
-        // Replace the last recommended one with the preselected one
-        // or just add it if we have space (but usually numPillars is the cap)
-        initialSelection = [preselectedPillar, ...initialSelection.slice(0, numPillars - 1)];
-      }
+      initialSelection = [preselectedPillar];
+    } else {
+      initialSelection = sorted.slice(0, numPillars);
     }
 
     setRecommendations(initialSelection);

@@ -140,7 +140,7 @@ describe('SetupWorkout Component', () => {
     expect(typeof args[1]).toBe('number'); // Should have a date timestamp
   });
 
-  it('includes preselectedPillar in initial recommendations', async () => {
+  it('includes ONLY preselectedPillar in initial recommendations', async () => {
     const preselected = mockPillars[2]; // Deadlift (Legs)
     
     render(
@@ -149,7 +149,7 @@ describe('SetupWorkout Component', () => {
         onStart={mockOnStart} 
         selectedFocus={null}
         setSelectedFocus={mockSetSelectedFocus}
-        numPillars={1}
+        numPillars={3} // Even if 3 are requested
         setNumPillars={mockSetNumPillars}
         preselectedPillar={preselected}
       />
@@ -159,6 +159,13 @@ describe('SetupWorkout Component', () => {
       // Find the Deadlift entry and check if it has the "ACTIVE" badge
       const deadliftBtn = screen.getByText('Deadlift').closest('button');
       expect(deadliftBtn).toHaveTextContent('ACTIVE');
+      
+      // Bench and Squat should NOT be active
+      const benchBtn = screen.getByText('Bench').closest('button');
+      expect(benchBtn).not.toHaveTextContent('ACTIVE');
+      
+      const squatBtn = screen.getByText('Squat').closest('button');
+      expect(squatBtn).not.toHaveTextContent('ACTIVE');
     });
   });
 });

@@ -72,6 +72,7 @@ const App: React.FC = () => {
 
   const handleStartSpecificWorkout = (pillar: Pillar) => {
     setPreselectedPillar(pillar);
+    setNumPillars(1);
     setCurrentView('setup');
   };
   
