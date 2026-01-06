@@ -139,4 +139,26 @@ describe('SetupWorkout Component', () => {
     expect(args[0].length).toBeGreaterThan(0); // Should have recommended pillars
     expect(typeof args[1]).toBe('number'); // Should have a date timestamp
   });
+
+  it('includes preselectedPillar in initial recommendations', async () => {
+    const preselected = mockPillars[2]; // Deadlift (Legs)
+    
+    render(
+      <SetupWorkout 
+        onCancel={mockOnCancel} 
+        onStart={mockOnStart} 
+        selectedFocus={null}
+        setSelectedFocus={mockSetSelectedFocus}
+        numPillars={1}
+        setNumPillars={mockSetNumPillars}
+        preselectedPillar={preselected}
+      />
+    );
+
+    await waitFor(() => {
+      // Find the Deadlift entry and check if it has the "ACTIVE" badge
+      const deadliftBtn = screen.getByText('Deadlift').closest('button');
+      expect(deadliftBtn).toHaveTextContent('ACTIVE');
+    });
+  });
 });

@@ -4,14 +4,17 @@ import { repository } from '../services/repository';
 import { Pillar } from '../types';
 import { getDaysSince, getStatusBg, getStatusColor, getOverdueScore } from '../utils';
 import { Play, Dumbbell, AlertTriangle } from 'lucide-react';
+import PillarDetailOverlay from './PillarDetailOverlay';
 
 interface DashboardProps {
   onStart: () => void;
+  onStartSpecificWorkout?: (pillar: Pillar) => void;
   currentView?: string;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ onStart, currentView }) => {
+const Dashboard: React.FC<DashboardProps> = ({ onStart, onStartSpecificWorkout, currentView }) => {
   const [pillars, setPillars] = useState<Pillar[]>([]);
+  const [selectedPillar, setSelectedPillar] = useState<Pillar | null>(null);
   const now = Date.now();
 
   useEffect(() => {
@@ -59,7 +62,11 @@ const Dashboard: React.FC<DashboardProps> = ({ onStart, currentView }) => {
             const daysSince = getDaysSince(p.lastCountedAt, now);
             const status = getStatusColor(p, now);
             return (
-              <div key={p.id} className="bg-gray-900 border border-gray-800 rounded-xl p-4 flex items-center justify-between">
+              <button 
+                key={p.id} 
+                onClick={() => setSelectedPillar(p)}
+                className="bg-gray-900 border border-gray-800 rounded-xl p-4 flex items-center justify-between hover:border-gray-700 active:scale-[0.98] transition-all text-left w-full"
+              >
                 <div className="flex items-center gap-3">
                   <div className={`w-3 h-3 rounded-full ${getStatusBg(status)} shadow-[0_0_8px] shadow-current`} />
                   <div>
@@ -73,11 +80,22 @@ const Dashboard: React.FC<DashboardProps> = ({ onStart, currentView }) => {
                   </span>
                   <p className="text-[10px] text-gray-600 uppercase">Since last count</p>
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>
       </section>
+
+      {selectedPillar && (
+        <PillarDetailOverlay 
+          pillar={selectedPillar} 
+          onClose={() => setSelectedPillar(null)} 
+          onStartWorkout={(p) => {
+            setSelectedPillar(null);
+            onStartSpecificWorkout?.(p);
+          }}
+        />
+      )}
     </div>
   );
 };

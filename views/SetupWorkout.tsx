@@ -11,10 +11,11 @@ interface SetupWorkoutProps {
   setSelectedFocus: (f: string | null) => void;
   numPillars: number;
   setNumPillars: (n: number) => void;
+  preselectedPillar?: Pillar | null;
 }
 
 const SetupWorkout: React.FC<SetupWorkoutProps> = ({ 
-  onCancel, onStart, selectedFocus, setSelectedFocus, numPillars, setNumPillars 
+  onCancel, onStart, selectedFocus, setSelectedFocus, numPillars, setNumPillars, preselectedPillar
 }) => {
   const [allPillars, setAllPillars] = useState<Pillar[]>([]);
   const [recommendations, setRecommendations] = useState<Pillar[]>([]);
@@ -29,9 +30,21 @@ const SetupWorkout: React.FC<SetupWorkoutProps> = ({
   useEffect(() => {
     if (allPillars.length === 0) return;
     const now = Date.now();
-    const sorted = getRecommendedPillars(allPillars, selectedFocus, now);
-    setRecommendations(sorted.slice(0, numPillars));
-  }, [allPillars, selectedFocus, numPillars]);
+    let sorted = getRecommendedPillars(allPillars, selectedFocus, now);
+    
+    let initialSelection = sorted.slice(0, numPillars);
+
+    // If we have a preselected pillar, ensure it is in the selection
+    if (preselectedPillar) {
+      if (!initialSelection.find(p => p.id === preselectedPillar.id)) {
+        // Replace the last recommended one with the preselected one
+        // or just add it if we have space (but usually numPillars is the cap)
+        initialSelection = [preselectedPillar, ...initialSelection.slice(0, numPillars - 1)];
+      }
+    }
+
+    setRecommendations(initialSelection);
+  }, [allPillars, selectedFocus, numPillars, preselectedPillar]);
 
   const togglePillarSelection = (p: Pillar) => {
     if (recommendations.find(r => r.id === p.id)) {

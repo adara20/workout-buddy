@@ -21,6 +21,7 @@ const App: React.FC = () => {
   const [lastFinishedSession, setLastFinishedSession] = useState<WorkoutSession | null>(null);
   const [selectedFocus, setSelectedFocus] = useState<string | null>(null);
   const [numPillars, setNumPillars] = useState(2);
+  const [preselectedPillar, setPreselectedPillar] = useState<Pillar | null>(null);
   const [config, setConfig] = useState<AppConfig | null>(null);
   const [initialized, setInitialized] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -64,7 +65,15 @@ const App: React.FC = () => {
 
   if (!initialized) return <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white font-mono">LOADING_DB...</div>;
 
-  const startSetup = () => setCurrentView('setup');
+  const startSetup = () => {
+    setPreselectedPillar(null);
+    setCurrentView('setup');
+  };
+
+  const handleStartSpecificWorkout = (pillar: Pillar) => {
+    setPreselectedPillar(pillar);
+    setCurrentView('setup');
+  };
   
   const startSession = (pillars: Pillar[], date?: number) => {
     const session: Partial<WorkoutSession> = {
@@ -95,7 +104,14 @@ const App: React.FC = () => {
   const renderView = () => {
     switch (currentView) {
       case 'dashboard':
-        return <Dashboard key="dashboard" onStart={startSetup} currentView={currentView} />;
+        return (
+          <Dashboard 
+            key="dashboard" 
+            onStart={startSetup} 
+            onStartSpecificWorkout={handleStartSpecificWorkout}
+            currentView={currentView} 
+          />
+        );
       case 'setup':
         return (
           <SetupWorkout 
@@ -105,6 +121,7 @@ const App: React.FC = () => {
             setSelectedFocus={setSelectedFocus}
             numPillars={numPillars}
             setNumPillars={setNumPillars}
+            preselectedPillar={preselectedPillar}
           />
         );
       case 'session':
