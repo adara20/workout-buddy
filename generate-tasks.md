@@ -43,7 +43,8 @@ The generated task list _must_ follow this structure:
 **Mandatory Workflow Rules:**
 1.  **Feature Isolation:** You **MUST** ensure new features are isolated and do not break or alter existing functionality. Verify this by running the full suite of existing tests.
 2.  **Continuous Verification:** You **MUST** run **ALL** unit tests after completing **each sub-task**. If any test fails (new or existing), you must fix it before proceeding.
-3.  **Extensive Testing:** For every new task, sub-task, or piece of logic, you **MUST** write extensive unit tests to cover:
+3.  **Zero-Threshold Verification:** Every single code modification—regardless of how small—**MUST** be followed by a type-check (`npx tsc --noEmit`) and, if it involves logic or UI rendering, a corresponding test run. NEVER assume a "one-liner" is safe.
+4.  **Extensive Testing:** For every new task, sub-task, or piece of logic, you **MUST** write extensive unit tests to cover:
     - **Success cases & Edge cases** (e.g., whitespace handling, case-insensitivity).
     - **Migration Paths:** If changing the database schema, you **MUST** write a migration test that simulates upgrading from a legacy version to the new version to prevent "UpgradeError" or data loss.
     - **Derived State:** If a change affects historical data, verify that derived stats (like PRs or timestamps) recalculate correctly across the whole dataset.
