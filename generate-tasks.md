@@ -67,7 +67,8 @@ The generated task list _must_ follow this structure:
   - [ ] 2.2 **Verify & Test:** Run ALL unit tests, add extensive tests, and ensure isolation.
   - [ ] 2.3 **Human Review & Local Commit**
 - [ ] 3.0 Finalize & Cleanup
-  - [ ] 3.1 **PR Request:** Ask the user if a PR should be created.
+  - [ ] 3.1 **Architecture Sync:** Update `ARCHITECTURE.md` if any system-wide patterns or schemas were changed.
+  - [ ] 3.2 **PR Request:** Ask the user if a PR should be created.
   - [ ] 3.2 **Push:** Push the local branch to the remote repository.
   - [ ] 3.3 **Cleanup:** Once the user confirms the PR is merged, delete local/remote branches and remove task artifacts from the `tasks/` directory.
 ```
