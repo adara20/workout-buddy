@@ -52,7 +52,17 @@ describe('Database Initialization and Migration', () => {
 
   it('updates canonical data fields when version increases', async () => {
      await db.config.put({ id: 'main', targetExercisesPerSession: 4, appDataVersion: 1 });
-     await db.pillars.put({ id: 'back_squat', name: 'Old Name', muscleGroup: 'Legs', cadenceDays: 5, prWeight: 500 });
+     await db.pillars.put({ 
+       id: 'back_squat', 
+       name: 'Old Name', 
+       muscleGroup: 'Legs', 
+       cadenceDays: 5, 
+       prWeight: 500,
+       minWorkingWeight: 0,
+       regressionFloorWeight: 0,
+       lastCountedAt: null,
+       lastLoggedAt: null
+     });
      await initAppData();
      const squat = await db.pillars.get('back_squat');
      expect(squat?.name).toBe('Back Squat');

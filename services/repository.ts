@@ -46,6 +46,7 @@ export class Repository {
       id: generateUUID(),
       isActive: true,
       prWeight: 0,
+      totalWorkouts: 0,
       minWorkingWeight: 0,
       regressionFloorWeight: 0,
       lastCountedAt: null,
@@ -175,8 +176,13 @@ export class Repository {
       let maxWeight = 0;
       let lastLoggedAt: number | null = null;
       let lastCountedAt: number | null = null;
+      let totalWorkouts = 0;
 
       for (const s of sessions) {
+        if (!s.isUntracked) {
+          totalWorkouts++;
+        }
+
         const entry = s.pillarsPerformed.find(p => p.pillarId === pillarId);
         if (!entry) continue;
 
@@ -196,6 +202,7 @@ export class Repository {
       // Update the pillar with fresh stats from history
       await db.pillars.update(pillarId, {
         prWeight: maxWeight,
+        totalWorkouts: totalWorkouts,
         lastLoggedAt: lastLoggedAt,
         lastCountedAt: lastCountedAt
       });

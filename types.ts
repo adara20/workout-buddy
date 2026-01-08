@@ -9,6 +9,7 @@ export interface Pillar {
   minWorkingWeight: number;
   regressionFloorWeight: number;
   prWeight: number;
+  totalWorkouts?: number;
   lastCountedAt: number | null; // Timestamp (epoch ms)
   lastLoggedAt: number | null;  // Timestamp (epoch ms)
   isActive?: boolean;
