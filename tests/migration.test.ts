@@ -69,6 +69,38 @@ describe('Database Initialization and Migration', () => {
      expect(squat?.cadenceDays).toBe(10);
   });
 
+  it('recalculates totalWorkouts for existing pillars when version increases', async () => {
+    // 1. Setup stale data (totalWorkouts is missing or 0)
+    // Use version 3 so that the recalculation check (currentDataVer >= 3) passes
+    await db.config.put({ id: 'main', targetExercisesPerSession: 4, appDataVersion: 3 });
+    const pId = 'back_squat';
+    await db.pillars.put({ 
+      id: pId, 
+      name: 'Back Squat', 
+      muscleGroup: 'Legs', 
+      cadenceDays: 10, 
+      prWeight: 0,
+      minWorkingWeight: 0,
+      regressionFloorWeight: 0,
+      lastCountedAt: null,
+      lastLoggedAt: null,
+      totalWorkouts: 0
+    });
+
+    // 2. Add some sessions for this pillar
+    await db.table('workout_sessions').bulkAdd([
+      { id: 's1', date: 1000, pillarsPerformed: [{ pillarId: pId, name: 'S', weight: 100, counted: true, isPR: true, warning: false }], accessoriesPerformed: [] },
+      { id: 's2', date: 2000, pillarsPerformed: [{ pillarId: pId, name: 'S', weight: 110, counted: true, isPR: true, warning: false }], accessoriesPerformed: [] }
+    ]);
+
+    // 3. Trigger migration/init
+    await initAppData();
+
+    // 4. Verify count is now 2
+    const squat = await db.pillars.get(pId);
+    expect(squat?.totalWorkouts).toBe(2);
+  });
+
   it('initOnce allows retries on failure', async () => {
     vi.spyOn(db.config, 'get').mockRejectedValueOnce(new Error('DB Locked'));
     await expect(initOnce()).rejects.toThrow('DB Locked');

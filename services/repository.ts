@@ -260,4 +260,12 @@ export class Repository {
   }
 }
 
+export async function recalculateAllPillarStats(): Promise<void> {
+  const pillars = await db.pillars.toArray();
+  const pillarIds = pillars.map(p => p.id);
+  if (pillarIds.length > 0) {
+    await repository.recalculatePillarStats(pillarIds);
+  }
+}
+
 export const repository = new Repository();
