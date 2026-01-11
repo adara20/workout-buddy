@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { repository } from './repository';
 
 describe('repository history extensions', () => {
@@ -185,6 +185,143 @@ describe('repository history extensions', () => {
 
     await repository.clearPillars();
     await repository.clearSessions();
+  });
+
+  describe('totalWorkouts counter', () => {
+    it('increments totalWorkouts for tracked sessions', async () => {
+      const pId = 'count-test-tracked';
+      await repository.putPillar({
+        id: pId,
+        name: 'Count Test',
+        muscleGroup: 'Push',
+        cadenceDays: 5,
+        minWorkingWeight: 10,
+        regressionFloorWeight: 5,
+        prWeight: 0,
+        lastCountedAt: null,
+        lastLoggedAt: null,
+        totalWorkouts: 0
+      });
+
+      await repository.addSession({
+        date: 1000,
+        pillarsPerformed: [{ pillarId: pId, name: 'P', weight: 100, counted: true, isPR: true, warning: false }],
+        accessoriesPerformed: [],
+        isUntracked: false
+      });
+
+      let pillar = await repository.getPillarById(pId);
+      expect(pillar?.totalWorkouts).toBe(1);
+
+      await repository.addSession({
+        date: 2000,
+        pillarsPerformed: [{ pillarId: pId, name: 'P', weight: 110, counted: true, isPR: true, warning: false }],
+        accessoriesPerformed: []
+      });
+
+      pillar = await repository.getPillarById(pId);
+      expect(pillar?.totalWorkouts).toBe(2);
+    });
+
+    it('does not increment totalWorkouts for untracked sessions', async () => {
+      const pId = 'count-test-untracked';
+      await repository.putPillar({
+        id: pId,
+        name: 'Untracked Test',
+        muscleGroup: 'Push',
+        cadenceDays: 5,
+        minWorkingWeight: 10,
+        regressionFloorWeight: 5,
+        prWeight: 0,
+        lastCountedAt: null,
+        lastLoggedAt: null,
+        totalWorkouts: 0
+      });
+
+      await repository.addSession({
+        date: 1000,
+        pillarsPerformed: [{ pillarId: pId, name: 'P', weight: 100, counted: true, isPR: true, warning: false }],
+        accessoriesPerformed: [],
+        isUntracked: true
+      });
+
+      const pillar = await repository.getPillarById(pId);
+      expect(pillar?.totalWorkouts).toBe(0);
+    });
+
+    it('decrements totalWorkouts when a session is deleted', async () => {
+      const pId = 'count-test-delete';
+      await repository.putPillar({
+        id: pId,
+        name: 'Delete Test',
+        muscleGroup: 'Push',
+        cadenceDays: 5,
+        minWorkingWeight: 10,
+        regressionFloorWeight: 5,
+        prWeight: 0,
+        lastCountedAt: null,
+        lastLoggedAt: null,
+        totalWorkouts: 0
+      });
+
+      const sId = await repository.addSession({
+        date: 1000,
+        pillarsPerformed: [{ pillarId: pId, name: 'P', weight: 100, counted: true, isPR: true, warning: false }],
+        accessoriesPerformed: []
+      });
+
+      let pillar = await repository.getPillarById(pId);
+      expect(pillar?.totalWorkouts).toBe(1);
+
+      await repository.deleteSession(sId);
+
+      pillar = await repository.getPillarById(pId);
+      expect(pillar?.totalWorkouts).toBe(0);
+    });
+
+    it('resets totalWorkouts when minWorkingWeight increases above historical session weights', async () => {
+      const pId = 'count-test-weight-increase';
+      await repository.putPillar({
+        id: pId,
+        name: 'Weight Filter Test',
+        muscleGroup: 'Push',
+        cadenceDays: 5,
+        minWorkingWeight: 100,
+        regressionFloorWeight: 50,
+        prWeight: 0,
+        lastCountedAt: null,
+        lastLoggedAt: null,
+        totalWorkouts: 0
+      });
+
+      // Session at 100 lbs
+      await repository.addSession({
+        date: 1000,
+        pillarsPerformed: [{ pillarId: pId, name: 'P', weight: 100, counted: true, isPR: true, warning: false }],
+        accessoriesPerformed: []
+      });
+
+      let pillar = await repository.getPillarById(pId);
+      expect(pillar?.totalWorkouts).toBe(1);
+
+      // Increase minWorkingWeight to 110 lbs. 
+      // Existing session (100 lbs) should no longer count.
+      await repository.updatePillar(pId, { minWorkingWeight: 110 });
+      // updatePillar triggers recalculatePillarStats internally
+      
+      pillar = await repository.getPillarById(pId);
+      expect(pillar?.totalWorkouts).toBe(0);
+
+      // New session at 115 lbs should count
+      await repository.addSession({
+        date: 2000,
+        pillarsPerformed: [{ pillarId: pId, name: 'P', weight: 115, counted: true, isPR: true, warning: false }],
+        accessoriesPerformed: []
+      });
+
+      pillar = await repository.getPillarById(pId);
+      expect(pillar?.totalWorkouts).toBe(1);
+    });
   });
 
   it('recalculates latest date correctly when session dates are updated', async () => {

@@ -2,9 +2,10 @@
 import Dexie, { Table } from 'dexie';
 import { Pillar, Accessory, WorkoutSession, AppConfig } from './types';
 import { generateUUID } from './utils';
+import { recalculateAllPillarStats } from './services/repository';
 
 // Incremented when built-in exercises are updated
-const CANONICAL_DATA_VERSION = 5;
+const CANONICAL_DATA_VERSION = 6;
 
 export class WorkoutDatabase extends Dexie {
   pillars!: Table<Pillar, string>;
@@ -212,6 +213,12 @@ export async function initAppData() {
         appDataVersion: CANONICAL_DATA_VERSION 
       });
     });
+
+    // Run recalculation outside transaction to avoid locking tables 
+    // and only if we are on a version that has the session table (v3+)
+    if (currentDataVer >= 3) {
+      await recalculateAllPillarStats();
+    }
   }
 
   // Request persistent storage

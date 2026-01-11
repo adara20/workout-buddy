@@ -44,6 +44,6 @@ describe('Data Seeding', () => {
     
     // 5. Verify config version is updated
     const config = await db.config.get('main');
-    expect(config?.appDataVersion).toBe(5);
+    expect(config?.appDataVersion).toBe(6);
   });
 });

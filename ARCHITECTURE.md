@@ -13,7 +13,7 @@ Workout Buddy is a "local-first" application. IndexedDB is the primary source of
 ### A. Data Layer (`db.ts`, `services/repository.ts`)
 - **`db.ts`**: Defines the Dexie schema, handles schema migrations, and seeds canonical exercises (Pillars/Accessories).
 - **`repository.ts`**: The central API for the entire app. **NEVER** call the database directly from a component; always use the `repository` singleton.
-    - **Data Integrity**: The repository is responsible for side effects like recalculating Personal Records (PRs) when a session is added or deleted.
+    - **Data Integrity**: The repository is responsible for side effects like recalculating Personal Records (PRs) and total workout counts when a session is added or deleted.
     - **Reactivity**: Components can subscribe to changes, and the `App` component uses a sync listener here to trigger cloud backups.
 
 ### B. Business Logic Layer (`services/`)

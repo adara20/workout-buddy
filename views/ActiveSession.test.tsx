@@ -88,7 +88,6 @@ describe('ActiveSession Component', () => {
 
     await waitFor(() => {
       expect(repository.addSession).toHaveBeenCalled();
-      expect(repository.updatePillar).toHaveBeenCalledWith('p1', expect.any(Object));
       expect(mockOnComplete).toHaveBeenCalled();
     });
   });

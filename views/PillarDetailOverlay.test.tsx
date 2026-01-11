@@ -19,6 +19,7 @@ describe('PillarDetailOverlay', () => {
     muscleGroup: 'Push',
     prWeight: 225,
     minWorkingWeight: 185,
+    totalWorkouts: 12,
     preferredAccessoryIds: ['a1', 'a2']
   });
 
@@ -41,6 +42,7 @@ describe('PillarDetailOverlay', () => {
     expect(screen.getByText('Push')).toBeInTheDocument();
     expect(screen.getByText('225')).toBeInTheDocument();
     expect(screen.getByText('185')).toBeInTheDocument();
+    expect(screen.getByText('12')).toBeInTheDocument();
 
     await waitFor(() => {
       expect(screen.getByText('Tricep Extension')).toBeInTheDocument();
