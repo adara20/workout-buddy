@@ -77,7 +77,7 @@ const PillarDetailOverlay: React.FC<PillarDetailOverlayProps> = ({ pillar, onClo
       />
       
       {/* Sheet/Modal */}
-      <div className="relative w-full max-w-lg bg-gray-900 border-t sm:border border-gray-800 rounded-t-[2.5rem] sm:rounded-3xl shadow-2xl overflow-hidden animate-in slide-in-from-bottom-10 duration-300">
+      <div className="relative w-full max-w-lg bg-gray-900 border-t sm:border border-gray-800 rounded-t-[2.5rem] sm:rounded-3xl shadow-2xl max-h-[85vh] overflow-y-auto animate-in slide-in-from-bottom-10 duration-300">
         <div className="p-6 sm:p-8 flex flex-col gap-8">
           
           <header className="flex justify-between items-start">
