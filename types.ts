@@ -15,6 +15,8 @@ export interface Pillar {
   isActive?: boolean;
   preferredAccessoryIds?: string[];
   notes?: string;
+  enableOverloadTracking?: boolean;
+  overloadThreshold?: number;
 }
 
 export interface Accessory {
