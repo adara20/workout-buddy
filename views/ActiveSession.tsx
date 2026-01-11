@@ -61,21 +61,7 @@ const ActiveSession: React.FC<ActiveSessionProps> = ({ initialSession, onComplet
   };
 
   const handleFinish = async () => {
-    const now = Date.now();
-    
-    await repository.runTransaction('rw', ['workout_sessions', 'pillars'], async () => {
-      // 1. Save Session
-      await repository.addSession(session);
-      
-      // 2. Update Pillar Stats
-      for (const pEntry of session.pillarsPerformed) {
-        const pInfo = pillarsData[pEntry.pillarId];
-        if (!pInfo) continue;
-        
-        const updates = calculatePillarUpdate(pEntry, now);
-        await repository.updatePillar(pEntry.pillarId, updates);
-      }
-    });
+    await repository.addSession(session);
     onComplete(session);
   };
 

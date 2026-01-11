@@ -79,7 +79,7 @@ const App: React.FC = () => {
     const session: Partial<WorkoutSession> = {
       date: date || Date.now(),
       pillarsPerformed: pillars.map(p => {
-        const initialWeight = p.prWeight > 0 ? p.prWeight : p.minWorkingWeight;
+        const initialWeight = Math.max(p.prWeight, p.minWorkingWeight);
         const initialEntry: PillarEntry = {
           pillarId: p.id,
           name: p.name,
@@ -92,6 +92,7 @@ const App: React.FC = () => {
       }),
       accessoriesPerformed: []
     };
+    setPreselectedPillar(null);
     setActiveSession(session);
     setCurrentView('session');
   };

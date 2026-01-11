@@ -1,6 +1,7 @@
 import { db } from '../db';
 import { Pillar, Accessory, WorkoutSession, AppConfig } from '../types';
 import { generateUUID } from '../utils';
+import Dexie from 'dexie';
 
 export class Repository {
   private onDataChange: (() => Promise<void>) | null = null;
@@ -56,6 +57,9 @@ export class Repository {
   }
   async updatePillar(id: string, updates: Partial<Pillar>): Promise<number> {
     const res = await db.pillars.update(id, updates);
+    if (updates.minWorkingWeight !== undefined) {
+      await this.recalculatePillarStats([id]);
+    }
     this.notifyChange();
     return res;
   }
@@ -63,6 +67,7 @@ export class Repository {
     if (!pillar.id) pillar.id = generateUUID();
     if (pillar.isActive === undefined) pillar.isActive = true;
     const res = await db.pillars.put(pillar);
+    await this.recalculatePillarStats([pillar.id]);
     this.notifyChange();
     return res;
   }
@@ -167,7 +172,14 @@ export class Repository {
    * Recalculates PRs and timestamps for specific pillars by scanning all history.
    */
   private async recalculatePillarStats(pillarIds: string[]): Promise<void> {
+    if (Dexie.currentTransaction) {
+      return;
+    }
+
     for (const pillarId of pillarIds) {
+      const pillar = await db.pillars.get(pillarId);
+      if (!pillar) continue;
+
       // Find all sessions containing this pillar
       const sessions = await db.table('workout_sessions')
         .filter((s: WorkoutSession) => s.pillarsPerformed.some(p => p.pillarId === pillarId))
@@ -179,12 +191,12 @@ export class Repository {
       let totalWorkouts = 0;
 
       for (const s of sessions) {
-        if (!s.isUntracked) {
-          totalWorkouts++;
-        }
-
         const entry = s.pillarsPerformed.find(p => p.pillarId === pillarId);
         if (!entry) continue;
+
+        if (!s.isUntracked && entry.weight >= pillar.minWorkingWeight) {
+          totalWorkouts++;
+        }
 
         if (entry.weight > maxWeight) {
           maxWeight = entry.weight;
