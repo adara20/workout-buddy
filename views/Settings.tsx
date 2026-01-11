@@ -608,6 +608,38 @@ const Settings: React.FC = () => {
                       onChange={e => updateEditForm({ notes: e.target.value })}
                     />
                   </div>
+
+                  {/* Progressive Overload Config */}
+                  <div className="bg-black/20 p-3 rounded-lg border border-gray-800 flex flex-col gap-3">
+                    <div className="flex items-center justify-between">
+                      <label htmlFor="overload-toggle" className="text-[10px] text-gray-400 uppercase font-bold flex items-center gap-2">
+                        <ShieldCheck size={14} className={editForm.enableOverloadTracking ? "text-blue-500" : "text-gray-600"} />
+                        Progressive Overload Tracking
+                      </label>
+                      <input 
+                        id="overload-toggle"
+                        type="checkbox"
+                        className="accent-blue-500 w-4 h-4"
+                        checked={editForm.enableOverloadTracking || false}
+                        onChange={e => updateEditForm({ enableOverloadTracking: e.target.checked })}
+                      />
+                    </div>
+                    
+                    {editForm.enableOverloadTracking && (
+                      <div className="flex flex-col gap-1 animate-in slide-in-from-top-1">
+                        <label htmlFor="overload-threshold" className="text-[10px] text-gray-500 uppercase font-bold">Sessions to Mastery (Threshold)</label>
+                        <input 
+                          id="overload-threshold"
+                          type="number"
+                          min="1"
+                          className="bg-gray-950 border border-gray-700 rounded p-2 text-sm outline-none focus:border-blue-500 text-white"
+                          value={editForm.overloadThreshold || 5}
+                          onChange={e => updateEditForm({ overloadThreshold: Math.max(1, parseInt(e.target.value) || 5) })}
+                        />
+                        <p className="text-[10px] text-gray-600 italic">Alerts you to increase weight after {editForm.overloadThreshold || 5} successful workouts.</p>
+                      </div>
+                    )}
+                  </div>
                   
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[10px] text-gray-500 uppercase font-bold">Linked Accessories</label>
