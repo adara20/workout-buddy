@@ -44,8 +44,9 @@ describe('PillarDetailOverlay', () => {
       totalWorkouts: 5, // Met threshold
       minWorkingWeight: 100
     };
+    const onStart = vi.fn();
 
-    render(<PillarDetailOverlay pillar={stagnatingPillar} onClose={() => {}} onStartWorkout={() => {}} />);
+    render(<PillarDetailOverlay pillar={stagnatingPillar} onClose={() => {}} onStartWorkout={onStart} />);
 
     // 1. Verify Indicator
     const indicator = screen.getByText(/Level Up\?/i);
@@ -67,6 +68,27 @@ describe('PillarDetailOverlay', () => {
     await userEvent.click(confirmBtn);
 
     expect(repository.updatePillar).toHaveBeenCalledWith('p1', { minWorkingWeight: 110 });
+
+    // 5. Verify Immediate UI Update (Optimistic)
+    expect(screen.queryByText(/Time to Level Up\?/i)).not.toBeInTheDocument();
+    
+    // Check "Work" card has new weight
+    // We look for 110 in the document. It might be in the adjuster (if view didn't close) or stat card.
+    // Since view closed, it must be the stat card.
+    expect(screen.getByText('110')).toBeInTheDocument();
+    
+    // Check "Count" is 0 and not "Level Up?"
+    expect(screen.getByText('0')).toBeInTheDocument();
+    expect(screen.queryByText(/Level Up\?/i)).not.toBeInTheDocument();
+
+    // 6. Verify Start Workout uses updated data
+    const startBtn = screen.getByText(/START SESSION/i);
+    await userEvent.click(startBtn);
+
+    expect(onStart).toHaveBeenCalledWith(expect.objectContaining({
+      minWorkingWeight: 110,
+      totalWorkouts: 0
+    }));
   });
 
   it('does not trigger overload flow when not stagnating', async () => {

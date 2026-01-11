@@ -17,11 +17,20 @@ const PillarDetailOverlay: React.FC<PillarDetailOverlayProps> = ({ pillar, onClo
   const [history, setHistory] = useState<ChartDataPoint[]>([]);
   const [loading, setLoading] = useState(true);
   
+  // Local state to handle immediate updates (like Level Up) without waiting for parent refresh
+  const [activePillar, setActivePillar] = useState(pillar);
+
   // Progressive Overload State
   const [showLevelUp, setShowLevelUp] = useState(false);
   const [newWeight, setNewWeight] = useState(pillar.minWorkingWeight + 5);
 
-  const isStagnating = pillar.enableOverloadTracking && (pillar.totalWorkouts || 0) >= (pillar.overloadThreshold || 5);
+  // Sync local state if prop changes (e.g. parent eventually refreshes)
+  useEffect(() => {
+    setActivePillar(pillar);
+    setNewWeight(pillar.minWorkingWeight + 5);
+  }, [pillar]);
+
+  const isStagnating = activePillar.enableOverloadTracking && (activePillar.totalWorkouts || 0) >= (activePillar.overloadThreshold || 5);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -29,13 +38,13 @@ const PillarDetailOverlay: React.FC<PillarDetailOverlayProps> = ({ pillar, onClo
       try {
         const [allAccs, sessions] = await Promise.all([
           repository.getAllAccessories(),
-          repository.getSessionsByPillar(pillar.id)
+          repository.getSessionsByPillar(activePillar.id)
         ]);
         
-        const filteredAccs = allAccs.filter(acc => (pillar.preferredAccessoryIds || []).includes(acc.id));
+        const filteredAccs = allAccs.filter(acc => (activePillar.preferredAccessoryIds || []).includes(acc.id));
         setAccessories(filteredAccs);
         
-        const chartData = extractPillarHistory(sessions, pillar.id);
+        const chartData = extractPillarHistory(sessions, activePillar.id);
         setHistory(chartData);
       } catch (err) {
         console.error('Failed to fetch data:', err);
@@ -44,10 +53,18 @@ const PillarDetailOverlay: React.FC<PillarDetailOverlayProps> = ({ pillar, onClo
       }
     };
     fetchData();
-  }, [pillar]);
+  }, [activePillar]); // Re-fetch if activePillar changes (e.g. weight update might conceptually affect things, though mostly history)
 
   const handleLevelUp = async () => {
-    await repository.updatePillar(pillar.id, { minWorkingWeight: newWeight });
+    await repository.updatePillar(activePillar.id, { minWorkingWeight: newWeight });
+    
+    // Update local state to reflect change immediately
+    setActivePillar(prev => ({
+      ...prev,
+      minWorkingWeight: newWeight,
+      totalWorkouts: 0
+    }));
+    
     setShowLevelUp(false);
   };
 
@@ -65,9 +82,9 @@ const PillarDetailOverlay: React.FC<PillarDetailOverlayProps> = ({ pillar, onClo
           
           <header className="flex justify-between items-start">
             <div>
-              <h2 className="text-3xl font-black text-white tracking-tight leading-none mb-2">{pillar.name}</h2>
+              <h2 className="text-3xl font-black text-white tracking-tight leading-none mb-2">{activePillar.name}</h2>
               <span className="bg-blue-500/10 text-blue-400 text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-md border border-blue-500/20">
-                {pillar.muscleGroup}
+                {activePillar.muscleGroup}
               </span>
             </div>
             <button 
@@ -84,14 +101,14 @@ const PillarDetailOverlay: React.FC<PillarDetailOverlayProps> = ({ pillar, onClo
                  <ArrowUpCircle size={32} className="text-amber-500 mx-auto mb-3" />
                  <h3 className="text-amber-500 font-black text-lg uppercase tracking-wide">Time to Level Up?</h3>
                  <p className="text-gray-400 text-sm mt-1">
-                   You've crushed {pillar.totalWorkouts} workouts at {pillar.minWorkingWeight}lbs. 
+                   You've crushed {activePillar.totalWorkouts} workouts at {activePillar.minWorkingWeight}lbs. 
                    Increase your working weight to reset your progress count.
                  </p>
               </div>
 
               <div className="flex items-center justify-center gap-4 py-4">
                 <button 
-                  onClick={() => setNewWeight(Math.max(pillar.minWorkingWeight + 5, newWeight - 5))}
+                  onClick={() => setNewWeight(Math.max(activePillar.minWorkingWeight + 5, newWeight - 5))}
                   className="w-12 h-12 rounded-full bg-gray-800 text-white font-bold text-xl flex items-center justify-center active:bg-gray-700"
                 >
                   -
@@ -132,7 +149,7 @@ const PillarDetailOverlay: React.FC<PillarDetailOverlayProps> = ({ pillar, onClo
                     <span className="text-[10px] font-bold uppercase tracking-widest">PR</span>
                   </div>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-xl font-black text-white">{pillar.prWeight}</span>
+                    <span className="text-xl font-black text-white">{activePillar.prWeight}</span>
                     <span className="text-[10px] text-gray-500 font-bold">lb</span>
                   </div>
                 </div>
@@ -143,7 +160,7 @@ const PillarDetailOverlay: React.FC<PillarDetailOverlayProps> = ({ pillar, onClo
                     <span className="text-[10px] font-bold uppercase tracking-widest">Work</span>
                   </div>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-xl font-black text-white">{pillar.minWorkingWeight}</span>
+                    <span className="text-xl font-black text-white">{activePillar.minWorkingWeight}</span>
                     <span className="text-[10px] text-gray-500 font-bold">lb</span>
                   </div>
                 </div>
@@ -165,7 +182,7 @@ const PillarDetailOverlay: React.FC<PillarDetailOverlayProps> = ({ pillar, onClo
                   </div>
                   <div className="flex items-baseline gap-1">
                     <span className={`text-xl font-black ${isStagnating ? 'text-amber-400' : 'text-white'}`}>
-                      {pillar.totalWorkouts || 0}
+                      {activePillar.totalWorkouts || 0}
                     </span>
                   </div>
                 </button>
@@ -179,13 +196,13 @@ const PillarDetailOverlay: React.FC<PillarDetailOverlayProps> = ({ pillar, onClo
                 <PillarTrendChart data={history} />
               </section>
 
-              {pillar.notes && (
+              {activePillar.notes && (
                 <section className="bg-blue-500/5 border border-blue-500/10 p-5 rounded-3xl flex flex-col gap-3">
                   <div className="flex items-center gap-2 text-blue-400">
                     <ClipboardList size={16} />
                     <h3 className="text-[10px] font-black uppercase tracking-[0.2em]">Coaching Cues</h3>
                   </div>
-                  <MarkdownLite text={pillar.notes} />
+                  <MarkdownLite text={activePillar.notes} />
                 </section>
               )}
 
@@ -218,7 +235,7 @@ const PillarDetailOverlay: React.FC<PillarDetailOverlayProps> = ({ pillar, onClo
 
               <footer className="mt-2">
                 <button
-                  onClick={() => onStartWorkout(pillar)}
+                  onClick={() => onStartWorkout(activePillar)}
                   className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl flex items-center justify-center gap-3 shadow-xl shadow-blue-900/40 active:scale-[0.98] transition-all"
                 >
                   <Play size={20} fill="currentColor" />
