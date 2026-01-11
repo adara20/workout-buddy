@@ -51,7 +51,9 @@ export class Repository {
       minWorkingWeight: 0,
       regressionFloorWeight: 0,
       lastCountedAt: null,
-      lastLoggedAt: null
+      lastLoggedAt: null,
+      enableOverloadTracking: false,
+      overloadThreshold: 5
     };
     return this.putPillar(newPillar);
   }
@@ -171,7 +173,7 @@ export class Repository {
   /**
    * Recalculates PRs and timestamps for specific pillars by scanning all history.
    */
-  private async recalculatePillarStats(pillarIds: string[]): Promise<void> {
+  async recalculatePillarStats(pillarIds: string[]): Promise<void> {
     if (Dexie.currentTransaction) {
       return;
     }

@@ -31,11 +31,19 @@ We keep the "Brain" of the app separate from the "Face" (UI):
 - **View Components**: Flat hierarchy. Views fetch what they need from the `repository` on mount.
 - **Overlays**: Complex details (like Pillar coaching cues) are managed via overlays to keep the main view state clean.
 
-## 3. Domain Logic: The "Counted" Rule
+## 3. Domain Logic
+
+### The "Counted" Rule
 The most critical rule in the app:
 - A Pillar rotation only resets if the workout is "Counted."
 - **Counted** = Weight performed is ≥ `minWorkingWeight`.
 - This prevents "light days" or "warmups" from resetting the rotation timer.
+
+### Progressive Overload
+To prevent stagnation, Pillars can opt-in to **Overload Tracking**:
+- **Stagnation**: Occurs when `totalWorkouts` (at the current weight) reaches the `overloadThreshold` (default 5).
+- **Level Up**: The user is prompted to increase the `minWorkingWeight`.
+- **Reset**: Increasing the weight implicitly resets `totalWorkouts` to 0 because historical sessions no longer meet the *new* `minWorkingWeight` threshold (per the "Counted" Rule).
 
 ## 4. Testing Philosophy
 - **Unit Tests**: Located next to the source (e.g., `repository.test.ts`). Focus on logic and data integrity.

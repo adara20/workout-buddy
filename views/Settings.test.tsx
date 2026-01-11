@@ -177,6 +177,42 @@ describe('Settings Component', () => {
     }));
   });
 
+  it('updates overload tracking configuration', async () => {
+    (repository.getActivePillars as any).mockResolvedValue([
+      createMockPillar({ id: 'p1', name: 'Bench', enableOverloadTracking: false })
+    ]);
+
+    render(<Settings />);
+    
+    await waitFor(() => screen.getByText('Bench'));
+    
+    // Open edit mode
+    const editBtn = screen.getByTitle('Edit Pillar');
+    fireEvent.click(editBtn);
+
+    // Find and click the toggle
+    const toggle = screen.getByLabelText(/Progressive Overload Tracking/i);
+    expect(toggle).not.toBeChecked();
+    fireEvent.click(toggle);
+    expect(toggle).toBeChecked();
+
+    // Threshold input should appear
+    const input = screen.getByLabelText(/Sessions to Mastery/i);
+    expect(input).toBeInTheDocument();
+    fireEvent.change(input, { target: { value: '8' } });
+
+    // Click Save
+    const saveBtn = screen.getByText('Save');
+    fireEvent.click(saveBtn);
+
+    // Verify persistence
+    expect(repository.putPillar).toHaveBeenCalledWith(expect.objectContaining({
+      id: 'p1',
+      enableOverloadTracking: true,
+      overloadThreshold: 8
+    }));
+  });
+
   it('handles sync errors gracefully', async () => {
     (onAuthChange as any).mockImplementation((cb: any) => {
       cb({ email: 'test@example.com', uid: '123' });
