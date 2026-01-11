@@ -9,6 +9,7 @@ vi.mock('../services/repository', () => ({
   repository: {
     getAllAccessories: vi.fn(),
     getSessionsByPillar: vi.fn(),
+    updatePillar: vi.fn(),
   },
 }));
 
@@ -33,6 +34,62 @@ describe('PillarDetailOverlay', () => {
     vi.clearAllMocks();
     (repository.getAllAccessories as any).mockResolvedValue(mockAccessories);
     (repository.getSessionsByPillar as any).mockResolvedValue([]);
+  });
+
+  it('triggers overload level-up flow when stagnating', async () => {
+    const stagnatingPillar = {
+      ...mockPillar,
+      enableOverloadTracking: true,
+      overloadThreshold: 5,
+      totalWorkouts: 5, // Met threshold
+      minWorkingWeight: 100
+    };
+
+    render(<PillarDetailOverlay pillar={stagnatingPillar} onClose={() => {}} onStartWorkout={() => {}} />);
+
+    // 1. Verify Indicator
+    const indicator = screen.getByText(/Level Up\?/i);
+    expect(indicator).toBeInTheDocument();
+    
+    // 2. Click to open Level Up view
+    await userEvent.click(indicator);
+    
+    expect(screen.getByText(/Time to Level Up\?/i)).toBeInTheDocument();
+    expect(screen.getByText('105')).toBeInTheDocument(); // Default +5
+
+    // 3. Adjust Weight (+5)
+    const plusBtn = screen.getByText('+');
+    await userEvent.click(plusBtn);
+    expect(screen.getByText('110')).toBeInTheDocument();
+
+    // 4. Confirm
+    const confirmBtn = screen.getByText(/Confirm & Reset/i);
+    await userEvent.click(confirmBtn);
+
+    expect(repository.updatePillar).toHaveBeenCalledWith('p1', { minWorkingWeight: 110 });
+  });
+
+  it('does not trigger overload flow when not stagnating', async () => {
+    const normalPillar = {
+      ...mockPillar,
+      enableOverloadTracking: true,
+      overloadThreshold: 5,
+      totalWorkouts: 4 // Below threshold
+    };
+
+    render(<PillarDetailOverlay pillar={normalPillar} onClose={() => {}} onStartWorkout={() => {}} />);
+
+    // Should show "Count" instead of "Level Up?"
+    expect(screen.getByText(/Count/i)).toBeInTheDocument();
+    expect(screen.queryByText(/Level Up\?/i)).not.toBeInTheDocument();
+
+    // Clicking it should do nothing (it's disabled/non-interactive in UI logic for non-stagnating)
+    // We can check if the button is disabled or just check that level up text doesn't appear after click
+    const countBtn = screen.getByText('4').closest('button');
+    if (countBtn) {
+       await userEvent.click(countBtn);
+    }
+    expect(screen.queryByText(/Time to Level Up\?/i)).not.toBeInTheDocument();
   });
 
   it('renders pillar details correctly', async () => {

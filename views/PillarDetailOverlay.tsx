@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Pillar, Accessory, WorkoutSession } from '../types';
 import { repository } from '../services/repository';
-import { X, Trophy, Target, Dumbbell, Play, ClipboardList, TrendingUp, Hash } from 'lucide-react';
+import { X, Trophy, Target, Dumbbell, Play, ClipboardList, TrendingUp, Hash, ArrowUpCircle, CheckCircle2 } from 'lucide-react';
 import { MarkdownLite } from './MarkdownLite';
 import { extractPillarHistory, ChartDataPoint } from '../services/stats';
 import PillarTrendChart from './PillarTrendChart';
@@ -16,6 +16,12 @@ const PillarDetailOverlay: React.FC<PillarDetailOverlayProps> = ({ pillar, onClo
   const [accessories, setAccessories] = useState<Accessory[]>([]);
   const [history, setHistory] = useState<ChartDataPoint[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Progressive Overload State
+  const [showLevelUp, setShowLevelUp] = useState(false);
+  const [newWeight, setNewWeight] = useState(pillar.minWorkingWeight + 5);
+
+  const isStagnating = pillar.enableOverloadTracking && (pillar.totalWorkouts || 0) >= (pillar.overloadThreshold || 5);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -39,6 +45,11 @@ const PillarDetailOverlay: React.FC<PillarDetailOverlayProps> = ({ pillar, onClo
     };
     fetchData();
   }, [pillar]);
+
+  const handleLevelUp = async () => {
+    await repository.updatePillar(pillar.id, { minWorkingWeight: newWeight });
+    setShowLevelUp(false);
+  };
 
   return (
     <div className="fixed inset-0 z-[100] flex items-end justify-center sm:items-center p-0 sm:p-4 animate-in fade-in duration-200">
@@ -67,94 +78,155 @@ const PillarDetailOverlay: React.FC<PillarDetailOverlayProps> = ({ pillar, onClo
             </button>
           </header>
 
-          <div className="grid grid-cols-3 gap-3">
-            <div className="bg-gray-950/50 border border-gray-800 p-3 rounded-2xl flex flex-col gap-1">
-              <div className="flex items-center gap-2 text-yellow-500 mb-1">
-                <Trophy size={14} />
-                <span className="text-[10px] font-bold uppercase tracking-widest">PR</span>
+          {showLevelUp ? (
+            <div className="flex flex-col gap-6 animate-in slide-in-from-right-4 duration-300">
+              <div className="bg-amber-500/10 border border-amber-500/20 p-5 rounded-3xl text-center">
+                 <ArrowUpCircle size={32} className="text-amber-500 mx-auto mb-3" />
+                 <h3 className="text-amber-500 font-black text-lg uppercase tracking-wide">Time to Level Up?</h3>
+                 <p className="text-gray-400 text-sm mt-1">
+                   You've crushed {pillar.totalWorkouts} workouts at {pillar.minWorkingWeight}lbs. 
+                   Increase your working weight to reset your progress count.
+                 </p>
               </div>
-              <div className="flex items-baseline gap-1">
-                <span className="text-xl font-black text-white">{pillar.prWeight}</span>
-                <span className="text-[10px] text-gray-500 font-bold">lb</span>
+
+              <div className="flex items-center justify-center gap-4 py-4">
+                <button 
+                  onClick={() => setNewWeight(Math.max(pillar.minWorkingWeight + 5, newWeight - 5))}
+                  className="w-12 h-12 rounded-full bg-gray-800 text-white font-bold text-xl flex items-center justify-center active:bg-gray-700"
+                >
+                  -
+                </button>
+                <div className="flex flex-col items-center">
+                  <span className="text-5xl font-black text-white tracking-tighter">{newWeight}</span>
+                  <span className="text-xs text-gray-500 font-bold uppercase tracking-widest">Target Weight (lbs)</span>
+                </div>
+                <button 
+                  onClick={() => setNewWeight(newWeight + 5)}
+                  className="w-12 h-12 rounded-full bg-gray-800 text-white font-bold text-xl flex items-center justify-center active:bg-gray-700"
+                >
+                  +
+                </button>
+              </div>
+
+              <div className="flex gap-3 mt-4">
+                <button 
+                  onClick={() => setShowLevelUp(false)}
+                  className="flex-1 py-4 rounded-2xl bg-gray-800 text-gray-400 font-bold uppercase text-xs"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleLevelUp}
+                  className="flex-2 py-4 px-8 rounded-2xl bg-amber-500 text-black font-black uppercase text-xs flex items-center justify-center gap-2 hover:bg-amber-400 transition-colors"
+                >
+                  <CheckCircle2 size={16} /> Confirm & Reset
+                </button>
               </div>
             </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="bg-gray-950/50 border border-gray-800 p-3 rounded-2xl flex flex-col gap-1">
+                  <div className="flex items-center gap-2 text-yellow-500 mb-1">
+                    <Trophy size={14} />
+                    <span className="text-[10px] font-bold uppercase tracking-widest">PR</span>
+                  </div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-xl font-black text-white">{pillar.prWeight}</span>
+                    <span className="text-[10px] text-gray-500 font-bold">lb</span>
+                  </div>
+                </div>
 
-            <div className="bg-gray-950/50 border border-gray-800 p-3 rounded-2xl flex flex-col gap-1">
-              <div className="flex items-center gap-2 text-blue-500 mb-1">
-                <Target size={14} />
-                <span className="text-[10px] font-bold uppercase tracking-widest">Work</span>
-              </div>
-              <div className="flex items-baseline gap-1">
-                <span className="text-xl font-black text-white">{pillar.minWorkingWeight}</span>
-                <span className="text-[10px] text-gray-500 font-bold">lb</span>
-              </div>
-            </div>
+                <div className="bg-gray-950/50 border border-gray-800 p-3 rounded-2xl flex flex-col gap-1">
+                  <div className="flex items-center gap-2 text-blue-500 mb-1">
+                    <Target size={14} />
+                    <span className="text-[10px] font-bold uppercase tracking-widest">Work</span>
+                  </div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-xl font-black text-white">{pillar.minWorkingWeight}</span>
+                    <span className="text-[10px] text-gray-500 font-bold">lb</span>
+                  </div>
+                </div>
 
-            <div className="bg-gray-950/50 border border-gray-800 p-3 rounded-2xl flex flex-col gap-1">
-              <div className="flex items-center gap-2 text-emerald-500 mb-1">
-                <Hash size={14} />
-                <span className="text-[10px] font-bold uppercase tracking-widest">Count</span>
+                <button 
+                  onClick={() => isStagnating && setShowLevelUp(true)}
+                  disabled={!isStagnating}
+                  className={`border p-3 rounded-2xl flex flex-col gap-1 transition-all text-left ${
+                    isStagnating 
+                      ? 'bg-amber-500/10 border-amber-500/30 cursor-pointer hover:bg-amber-500/20 active:scale-95' 
+                      : 'bg-gray-950/50 border-gray-800 cursor-default'
+                  }`}
+                >
+                  <div className={`flex items-center gap-2 mb-1 ${isStagnating ? 'text-amber-500' : 'text-emerald-500'}`}>
+                    <Hash size={14} />
+                    <span className="text-[10px] font-bold uppercase tracking-widest">
+                      {isStagnating ? 'Level Up?' : 'Count'}
+                    </span>
+                  </div>
+                  <div className="flex items-baseline gap-1">
+                    <span className={`text-xl font-black ${isStagnating ? 'text-amber-400' : 'text-white'}`}>
+                      {pillar.totalWorkouts || 0}
+                    </span>
+                  </div>
+                </button>
               </div>
-              <div className="flex items-baseline gap-1">
-                <span className="text-xl font-black text-white">{pillar.totalWorkouts || 0}</span>
-              </div>
-            </div>
-          </div>
 
-          <section className="flex flex-col gap-4">
-            <div className="flex items-center gap-2 text-gray-500">
-              <TrendingUp size={16} />
-              <h3 className="text-xs font-bold uppercase tracking-widest">Progression Trend</h3>
-            </div>
-            <PillarTrendChart data={history} />
-          </section>
+              <section className="flex flex-col gap-4">
+                <div className="flex items-center gap-2 text-gray-500">
+                  <TrendingUp size={16} />
+                  <h3 className="text-xs font-bold uppercase tracking-widest">Progression Trend</h3>
+                </div>
+                <PillarTrendChart data={history} />
+              </section>
 
-          {pillar.notes && (
-            <section className="bg-blue-500/5 border border-blue-500/10 p-5 rounded-3xl flex flex-col gap-3">
-              <div className="flex items-center gap-2 text-blue-400">
-                <ClipboardList size={16} />
-                <h3 className="text-[10px] font-black uppercase tracking-[0.2em]">Coaching Cues</h3>
-              </div>
-              <MarkdownLite text={pillar.notes} />
-            </section>
+              {pillar.notes && (
+                <section className="bg-blue-500/5 border border-blue-500/10 p-5 rounded-3xl flex flex-col gap-3">
+                  <div className="flex items-center gap-2 text-blue-400">
+                    <ClipboardList size={16} />
+                    <h3 className="text-[10px] font-black uppercase tracking-[0.2em]">Coaching Cues</h3>
+                  </div>
+                  <MarkdownLite text={pillar.notes} />
+                </section>
+              )}
+
+              <section>
+                <div className="flex items-center gap-2 mb-4">
+                  <Dumbbell size={16} className="text-gray-500" />
+                  <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Associated Accessories</h3>
+                </div>
+                
+                {loading ? (
+                  <div className="flex gap-2 animate-pulse">
+                    <div className="h-8 w-24 bg-gray-800 rounded-full" />
+                    <div className="h-8 w-32 bg-gray-800 rounded-full" />
+                  </div>
+                ) : accessories.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {accessories.map(acc => (
+                      <span 
+                        key={acc.id}
+                        className="bg-gray-800 text-gray-300 text-xs font-semibold px-4 py-2 rounded-full border border-gray-700"
+                      >
+                        {acc.name}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-600 italic">No preferred accessories linked.</p>
+                )}
+              </section>
+
+              <footer className="mt-2">
+                <button
+                  onClick={() => onStartWorkout(pillar)}
+                  className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl flex items-center justify-center gap-3 shadow-xl shadow-blue-900/40 active:scale-[0.98] transition-all"
+                >
+                  <Play size={20} fill="currentColor" />
+                  START SESSION
+                </button>
+              </footer>
+            </>
           )}
-
-          <section>
-            <div className="flex items-center gap-2 mb-4">
-              <Dumbbell size={16} className="text-gray-500" />
-              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">Associated Accessories</h3>
-            </div>
-            
-            {loading ? (
-              <div className="flex gap-2 animate-pulse">
-                <div className="h-8 w-24 bg-gray-800 rounded-full" />
-                <div className="h-8 w-32 bg-gray-800 rounded-full" />
-              </div>
-            ) : accessories.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {accessories.map(acc => (
-                  <span 
-                    key={acc.id}
-                    className="bg-gray-800 text-gray-300 text-xs font-semibold px-4 py-2 rounded-full border border-gray-700"
-                  >
-                    {acc.name}
-                  </span>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-gray-600 italic">No preferred accessories linked.</p>
-            )}
-          </section>
-
-          <footer className="mt-2">
-            <button
-              onClick={() => onStartWorkout(pillar)}
-              className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl flex items-center justify-center gap-3 shadow-xl shadow-blue-900/40 active:scale-[0.98] transition-all"
-            >
-              <Play size={20} fill="currentColor" />
-              START SESSION
-            </button>
-          </footer>
         </div>
       </div>
     </div>
