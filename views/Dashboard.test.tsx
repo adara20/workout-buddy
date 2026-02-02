@@ -64,6 +64,20 @@ describe('Dashboard Component', () => {
     expect(screen.getByText('Overlay: Squat')).toBeInTheDocument();
   });
 
+  it('closes overlay when onClose is called', async () => {
+    const mockPillars = [createMockPillar({ name: 'Squat' })];
+    (repository.getActivePillars as any).mockResolvedValue(mockPillars);
+
+    render(<Dashboard onStart={mockOnStart} currentView="dashboard" />);
+
+    await waitFor(() => expect(screen.getByText('Squat')).toBeInTheDocument());
+    fireEvent.click(screen.getByText('Squat').closest('button')!);
+    expect(screen.getByTestId('mock-overlay')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('Close'));
+    expect(screen.queryByTestId('mock-overlay')).not.toBeInTheDocument();
+  });
+
   it('calls onStartSpecificWorkout when start is clicked in overlay', async () => {
     const mockPillars = [createMockPillar({ name: 'Squat' })];
     (repository.getActivePillars as any).mockResolvedValue(mockPillars);
@@ -122,6 +136,74 @@ describe('Dashboard Component', () => {
       const pillars = screen.getAllByRole('heading', { level: 4 });
       expect(pillars[0]).toHaveTextContent('Overdue Pillar');
       expect(pillars[1]).toHaveTextContent('Fresh Pillar');
+    });
+  });
+
+  describe('Progressive Overload Nudge', () => {
+    it('shows the progression nudge when pillar meets overload threshold', async () => {
+      const mockPillars = [
+        createMockPillar({ 
+          name: 'Heavy Squat', 
+          enableOverloadTracking: true, 
+          totalWorkouts: 5, 
+          overloadThreshold: 5 
+        })
+      ];
+      (repository.getActivePillars as any).mockResolvedValue(mockPillars);
+
+      render(<Dashboard onStart={mockOnStart} currentView="dashboard" />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Heavy Squat')).toBeInTheDocument();
+      });
+
+      // ArrowUpCircle is from lucide-react, we check for its presence via data-testid if it had one, 
+      // but here we check for the svg or its container if we can't easily find by role.
+      // Lucide icons usually render as SVGs with specific classes.
+      const icon = document.querySelector('.text-amber-500');
+      expect(icon).toBeInTheDocument();
+    });
+
+    it('does not show the nudge when threshold is not met', async () => {
+      const mockPillars = [
+        createMockPillar({ 
+          name: 'Light Squat', 
+          enableOverloadTracking: true, 
+          totalWorkouts: 4, 
+          overloadThreshold: 5 
+        })
+      ];
+      (repository.getActivePillars as any).mockResolvedValue(mockPillars);
+
+      render(<Dashboard onStart={mockOnStart} currentView="dashboard" />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Light Squat')).toBeInTheDocument();
+      });
+
+      const icon = document.querySelector('.text-amber-500');
+      expect(icon).not.toBeInTheDocument();
+    });
+
+    it('does not show the nudge when tracking is disabled even if count is high', async () => {
+      const mockPillars = [
+        createMockPillar({ 
+          name: 'Untracked Squat', 
+          enableOverloadTracking: false, 
+          totalWorkouts: 10, 
+          overloadThreshold: 5 
+        })
+      ];
+      (repository.getActivePillars as any).mockResolvedValue(mockPillars);
+
+      render(<Dashboard onStart={mockOnStart} currentView="dashboard" />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Untracked Squat')).toBeInTheDocument();
+      });
+
+      const icon = document.querySelector('.text-amber-500');
+      expect(icon).not.toBeInTheDocument();
     });
   });
 });
