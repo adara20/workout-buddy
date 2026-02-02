@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { repository } from '../services/repository';
 import { Pillar } from '../types';
 import { getDaysSince, getStatusBg, getStatusColor, getOverdueScore } from '../utils';
-import { Play, Dumbbell, AlertTriangle } from 'lucide-react';
+import { Play, Dumbbell, AlertTriangle, ArrowUpCircle } from 'lucide-react';
 import PillarDetailOverlay from './PillarDetailOverlay';
 
 interface DashboardProps {
@@ -61,6 +61,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onStart, onStartSpecificWorkout, 
           {sortedPillars.map(p => {
             const daysSince = getDaysSince(p.lastCountedAt, now);
             const status = getStatusColor(p, now);
+            const isStagnating = p.enableOverloadTracking && (p.totalWorkouts || 0) >= (p.overloadThreshold || 5);
+
             return (
               <button 
                 key={p.id} 
@@ -70,7 +72,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onStart, onStartSpecificWorkout, 
                 <div className="flex items-center gap-3">
                   <div className={`w-3 h-3 rounded-full ${getStatusBg(status)} shadow-[0_0_8px] shadow-current`} />
                   <div>
-                    <h4 className="font-semibold text-gray-100">{p.name}</h4>
+                    <div className="flex items-center gap-1.5">
+                      <h4 className="font-semibold text-gray-100">{p.name}</h4>
+                      {isStagnating && <ArrowUpCircle size={14} className="text-amber-500" />}
+                    </div>
                     <p className="text-xs text-gray-500">{p.muscleGroup}</p>
                   </div>
                 </div>
