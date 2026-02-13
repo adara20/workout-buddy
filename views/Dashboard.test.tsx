@@ -206,4 +206,84 @@ describe('Dashboard Component', () => {
       expect(icon).not.toBeInTheDocument();
     });
   });
+
+  describe('Time Display Toggle', () => {
+    it('toggles between "Since last count" and "Days remaining"', async () => {
+      const now = Date.now();
+      const mockPillars = [
+        createMockPillar({ 
+          name: 'Weekly Squat', 
+          cadenceDays: 7, 
+          lastCountedAt: now - (5 * 24 * 60 * 60 * 1000) // 5 days ago
+        })
+      ];
+      (repository.getActivePillars as any).mockResolvedValue(mockPillars);
+
+      render(<Dashboard onStart={mockOnStart} currentView="dashboard" />);
+
+      // Initial state: "Since last count"
+      await waitFor(() => {
+        expect(screen.getByText('5d')).toBeInTheDocument();
+        expect(screen.getByText('Since last count')).toBeInTheDocument();
+      });
+
+      // Find and click the toggle button
+      const toggleBtn = screen.getByLabelText('Show days remaining until due');
+      fireEvent.click(toggleBtn);
+
+      // Toggled state: "Days remaining" -> 7 - 5 = 2 days left
+      expect(screen.getByText('2d')).toBeInTheDocument();
+      expect(screen.getByText('Remaining')).toBeInTheDocument();
+
+      // Toggle back
+      fireEvent.click(toggleBtn);
+      expect(screen.getByText('5d')).toBeInTheDocument();
+      expect(screen.getByText('Since last count')).toBeInTheDocument();
+    });
+
+    it('shows negative days for overdue items in remaining view', async () => {
+      const now = Date.now();
+      const mockPillars = [
+        createMockPillar({ 
+          name: 'Overdue Squat', 
+          cadenceDays: 5, 
+          lastCountedAt: now - (7 * 24 * 60 * 60 * 1000) // 7 days ago (2 days overdue)
+        })
+      ];
+      (repository.getActivePillars as any).mockResolvedValue(mockPillars);
+
+      render(<Dashboard onStart={mockOnStart} currentView="dashboard" />);
+
+      await waitFor(() => expect(screen.getByText('7d')).toBeInTheDocument());
+
+      const toggleBtn = screen.getByLabelText('Show days remaining until due');
+      fireEvent.click(toggleBtn);
+
+      // Overdue by 2 days -> "-2d"
+      expect(screen.getByText('-2d')).toBeInTheDocument();
+      expect(screen.getByText('Overdue by')).toBeInTheDocument();
+    });
+
+    it('handles "Never" done pillars in remaining view', async () => {
+      const mockPillars = [
+        createMockPillar({ 
+          name: 'New Squat', 
+          cadenceDays: 7, 
+          lastCountedAt: null 
+        })
+      ];
+      (repository.getActivePillars as any).mockResolvedValue(mockPillars);
+
+      render(<Dashboard onStart={mockOnStart} currentView="dashboard" />);
+
+      await waitFor(() => expect(screen.getByText('Never')).toBeInTheDocument());
+
+      const toggleBtn = screen.getByLabelText('Show days remaining until due');
+      fireEvent.click(toggleBtn);
+
+      // Should show "Start"
+      expect(screen.getByText('Start')).toBeInTheDocument();
+      expect(screen.getByText('Due now')).toBeInTheDocument();
+    });
+  });
 });

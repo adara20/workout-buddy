@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { repository } from '../services/repository';
 import { Pillar } from '../types';
 import { getDaysSince, getStatusBg, getStatusColor, getOverdueScore } from '../utils';
-import { Play, Dumbbell, AlertTriangle, ArrowUpCircle } from 'lucide-react';
+import { Play, Dumbbell, AlertTriangle, ArrowUpCircle, Clock } from 'lucide-react';
 import PillarDetailOverlay from './PillarDetailOverlay';
 
 interface DashboardProps {
@@ -15,6 +15,7 @@ interface DashboardProps {
 const Dashboard: React.FC<DashboardProps> = ({ onStart, onStartSpecificWorkout, currentView }) => {
   const [pillars, setPillars] = useState<Pillar[]>([]);
   const [selectedPillar, setSelectedPillar] = useState<Pillar | null>(null);
+  const [showRemaining, setShowRemaining] = useState(false);
   const now = Date.now();
 
   useEffect(() => {
@@ -56,12 +57,47 @@ const Dashboard: React.FC<DashboardProps> = ({ onStart, onStartSpecificWorkout, 
       </div>
 
       <section>
-        <h3 className="text-gray-400 font-semibold uppercase text-xs tracking-wider mb-3">Pillar Status</h3>
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="text-gray-400 font-semibold uppercase text-xs tracking-wider">Pillar Status</h3>
+          <button 
+            onClick={() => setShowRemaining(!showRemaining)}
+            className="text-gray-500 hover:text-white transition-colors p-1 -mr-1 rounded-full hover:bg-gray-800"
+            aria-label={showRemaining ? "Show days since last workout" : "Show days remaining until due"}
+          >
+            <Clock size={16} />
+          </button>
+        </div>
         <div className="flex flex-col gap-3">
           {sortedPillars.map(p => {
             const daysSince = getDaysSince(p.lastCountedAt, now);
             const status = getStatusColor(p, now);
             const isStagnating = p.enableOverloadTracking && (p.totalWorkouts || 0) >= (p.overloadThreshold || 5);
+
+            // Logic for "Remaining" view
+            const daysRemaining = p.cadenceDays - daysSince;
+            const isOverdue = daysRemaining < 0;
+            const neverDone = daysSince === 999;
+            
+            let displayValue = `${daysSince}d`;
+            let displayLabel = "Since last count";
+            let valueColor = daysSince > p.cadenceDays ? 'text-red-400' : 'text-gray-300';
+
+            if (showRemaining) {
+              if (neverDone) {
+                displayValue = "Start";
+                displayLabel = "Due now";
+                valueColor = "text-blue-400";
+              } else {
+                displayValue = `${daysRemaining}d`;
+                displayLabel = isOverdue ? "Overdue by" : "Remaining";
+                valueColor = isOverdue ? 'text-red-400' : (daysRemaining <= 1 ? 'text-yellow-400' : 'text-gray-300');
+              }
+            } else {
+              // Standard "Since" view logic
+              if (neverDone) {
+                displayValue = "Never";
+              }
+            }
 
             return (
               <button 
@@ -80,10 +116,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onStart, onStartSpecificWorkout, 
                   </div>
                 </div>
                 <div className="text-right">
-                  <span className={`text-sm font-bold ${daysSince > p.cadenceDays ? 'text-red-400' : 'text-gray-300'}`}>
-                    {daysSince === 999 ? 'Never' : `${daysSince}d`}
+                  <span className={`text-sm font-bold ${valueColor}`}>
+                    {displayValue}
                   </span>
-                  <p className="text-[10px] text-gray-600 uppercase">Since last count</p>
+                  <p className="text-[10px] text-gray-600 uppercase">{displayLabel}</p>
                 </div>
               </button>
             );
