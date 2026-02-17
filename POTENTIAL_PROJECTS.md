@@ -4,29 +4,29 @@ This document tracks high-level feature ideas and architectural improvements for
 
 ---
 
-## 1. Auto-Progression Logic ("Level Up")
-**Problem:** Users have to manually decide when to increase their `minWorkingWeight`.
-**Solution:** Implement a suggestion engine based on performance.
-- **Details:** If a user "counts" a Pillar (hits the target weight) 3 times in a row, suggest a 2.5lb or 5lb increase.
-- **Value:** Removes decision fatigue and ensures progressive overload.
-
-## 2. Accessory Rotation Tracking
+## 1. Accessory Rotation Tracking
 **Problem:** Unlike Pillars, accessories don't have a cadence, so certain exercises (like calves or rear delts) often get neglected for weeks.
 **Solution:** Track the "Last Performed" date for every accessory.
 - **Details:** In the "Setup Workout" view, display how many days it has been since an accessory was last logged. Highlight "stale" accessories.
 - **Value:** Ensures total body development and prevents the user from accidentally skipping the same accessories every session.
 
-## 3. Muscle Group Balance Audit
-**Problem:** Rotations can become unintentionally biased toward certain movements.
-**Solution:** An analytics widget showing volume distribution.
-- **Details:** A "radar" or bar chart showing the ratio of Push vs. Pull vs. Legs vs. Core over the last 30 days.
-- **Value:** Helps users maintain a balanced physique and prevent overtraining/injury.
-
-## 4. Plate Calculator Utility
+## 2. Plate Calculator Utility
 **Problem:** "Gym math" is a minor but constant friction point for barbell exercises.
 **Solution:** A quick-access plate breakdown tool.
 - **Details:** A small icon next to weight inputs that shows exactly which plates to load on a standard 45lb barbell.
 - **Value:** Reduces friction during heavy sessions like Squats or RDLs.
+
+## 3. Minimalist Rest Timer
+**Problem:** Users often lose track of rest periods between heavy sets, leading to inconsistent performance.
+**Solution:** A simple, non-intrusive rest timer in the `ActiveSession` view.
+- **Details:** A small timer that can be started manually or triggered automatically after logging a set. It should provide a gentle visual or haptic cue when the time is up.
+- **Value:** Improves session consistency without adding complex workout tracking overhead.
+
+## 4. Workout Templates
+**Problem:** Selecting the same set of Pillars and Accessories for recurring workout types (e.g., "Leg Day") is repetitive.
+**Solution:** Allow users to save and load "Templates" in the `SetupWorkout` view.
+- **Details:** A "Save as Template" button in the setup view and a list of saved templates to quickly pre-populate the current session.
+- **Value:** Speeds up the "time to lift" and reduces friction for users with fixed routines.
 
 ---
 
