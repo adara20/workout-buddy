@@ -20,7 +20,7 @@ Workout Buddy is a "local-first" application. IndexedDB is the primary source of
 We keep the "Brain" of the app separate from the "Face" (UI):
 - **`session.ts`**: Pure functions for calculating weights, progression, and "Counted" status during a workout.
 - **`recommendations.ts`**: The logic for choosing which Pillars to show next based on rotation scores.
-- **`stats.ts`**: Transforms raw session data into chart-ready formats.
+- **`stats.ts`**: Transforms raw session data into chart-ready formats and consistency metrics (e.g., Pillar Weeks Met).
 
 ### C. Cloud Layer (`services/auth.ts`, `services/cloud-rest.ts`)
 - **Firebase Auth**: Manages user identity.
