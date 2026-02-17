@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { repository } from '../services/repository';
 import { Pillar, WorkoutSession } from '../types';
 import { getDaysSince, getStatusBg, getStatusColor, getOverdueScore } from '../utils';
-import { Play, Dumbbell, AlertTriangle, ArrowUpCircle, Clock, Calendar } from 'lucide-react';
+import { Play, Dumbbell, ArrowUpCircle, Calendar } from 'lucide-react';
 import PillarDetailOverlay from './PillarDetailOverlay';
 import { calculateWeeksMetYTD } from '../services/stats';
 
@@ -17,7 +17,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onStart, onStartSpecificWorkout, 
   const [pillars, setPillars] = useState<Pillar[]>([]);
   const [sessions, setSessions] = useState<WorkoutSession[]>([]);
   const [selectedPillar, setSelectedPillar] = useState<Pillar | null>(null);
-  const [showRemaining, setShowRemaining] = useState(false);
   const now = Date.now();
 
   useEffect(() => {
@@ -60,13 +59,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onStart, onStartSpecificWorkout, 
       <section>
         <div className="flex justify-between items-center mb-3">
           <h3 className="text-gray-400 font-semibold uppercase text-xs tracking-wider">Pillar Status</h3>
-          <button 
-            onClick={() => setShowRemaining(!showRemaining)}
-            className="text-gray-500 hover:text-white transition-colors p-1 -mr-1 rounded-full hover:bg-gray-800"
-            aria-label={showRemaining ? "Show days since last workout" : "Show days remaining until due"}
-          >
-            <Clock size={16} />
-          </button>
         </div>
         <div className="flex flex-col gap-3">
           {sortedPillars.map(p => {
@@ -74,30 +66,23 @@ const Dashboard: React.FC<DashboardProps> = ({ onStart, onStartSpecificWorkout, 
             const status = getStatusColor(p, now);
             const isStagnating = p.enableOverloadTracking && (p.totalWorkouts || 0) >= (p.overloadThreshold || 5);
 
-            // Logic for "Remaining" view
+            // Force "Remaining" logic
             const daysRemaining = p.cadenceDays - daysSince;
             const isOverdue = daysRemaining < 0;
-            const neverDone = daysSince === 999;
+            const neverDone = p.lastCountedAt === null;
             
-            let displayValue = `${daysSince}d`;
-            let displayLabel = "Since last count";
-            let valueColor = daysSince > p.cadenceDays ? 'text-red-400' : 'text-gray-300';
+            let displayValue: string;
+            let displayLabel: string;
+            let valueColor: string;
 
-            if (showRemaining) {
-              if (neverDone) {
-                displayValue = "Start";
-                displayLabel = "Due now";
-                valueColor = "text-blue-400";
-              } else {
-                displayValue = `${daysRemaining}d`;
-                displayLabel = isOverdue ? "Overdue by" : "Remaining";
-                valueColor = isOverdue ? 'text-red-400' : (daysRemaining <= 1 ? 'text-yellow-400' : 'text-gray-300');
-              }
+            if (neverDone) {
+              displayValue = "---";
+              displayLabel = "No Data";
+              valueColor = "text-gray-600";
             } else {
-              // Standard "Since" view logic
-              if (neverDone) {
-                displayValue = "Never";
-              }
+              displayValue = `${daysRemaining}d`;
+              displayLabel = isOverdue ? "Overdue by" : "Remaining";
+              valueColor = isOverdue ? 'text-red-400' : (daysRemaining <= 1 ? 'text-yellow-400' : 'text-gray-300');
             }
 
             return (
