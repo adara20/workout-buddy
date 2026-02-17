@@ -58,6 +58,25 @@ describe('Dashboard Component', () => {
     });
   });
 
+  it('renders Yearly Consistency at the bottom of the content', async () => {
+    const mockPillars = [createMockPillar({ name: 'Squat' })];
+    (repository.getActivePillars as any).mockResolvedValue(mockPillars);
+    
+    const { container } = render(<Dashboard onStart={mockOnStart} currentView="dashboard" />);
+    
+    await waitFor(() => expect(screen.getByText('Squat')).toBeInTheDocument());
+
+    const sections = container.querySelectorAll('section');
+    
+    // Structure:
+    // 1. section (Pillar Status)
+    // 2. section (Yearly Consistency)
+    
+    expect(sections).toHaveLength(2);
+    expect(sections[0]).toHaveTextContent('Pillar Status');
+    expect(sections[1]).toHaveTextContent('Yearly Consistency');
+  });
+
   it('opens overlay when a pillar is clicked', async () => {
     const mockPillars = [createMockPillar({ name: 'Squat' })];
     (repository.getActivePillars as any).mockResolvedValue(mockPillars);
