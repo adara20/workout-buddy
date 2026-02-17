@@ -47,16 +47,13 @@ const Dashboard: React.FC<DashboardProps> = ({ onStart, onStartSpecificWorkout, 
         </div>
       </header>
 
-      <div className="bg-blue-600 rounded-2xl p-6 shadow-lg shadow-blue-900/20 flex flex-col items-center text-center gap-4">
-        <div className="space-y-1">
-          <h2 className="text-xl font-bold">Ready for a session?</h2>
-          <p className="text-blue-100 text-sm">Pillars will be recommended based on your rotation needs.</p>
-        </div>
+      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5 flex items-center justify-between shadow-sm">
+        <h2 className="text-lg font-bold text-white tracking-tight">Ready for a session?</h2>
         <button 
           onClick={onStart}
-          className="bg-white text-blue-600 font-bold py-3 px-8 rounded-full flex items-center gap-2 hover:bg-gray-100 transition-colors w-full justify-center"
+          className="bg-blue-600 text-white font-bold py-2.5 px-6 rounded-xl flex items-center gap-2 hover:bg-blue-700 transition-colors"
         >
-          <Play size={20} fill="currentColor" />
+          <Play size={18} fill="currentColor" />
           START WORKOUT
         </button>
       </div>
