@@ -36,15 +36,16 @@ const Dashboard: React.FC<DashboardProps> = ({ onStart, onStartSpecificWorkout, 
   const weeksMet = calculateWeeksMetYTD(sessions, now);
 
   return (
-    <div className="p-3 flex flex-col gap-4 max-w-lg mx-auto">
-      <div className="flex justify-between items-center px-1">
-        <div className="flex items-center gap-2">
-          <Dumbbell className="text-blue-500" size={12} />
-          <span className="text-[10px] font-mono text-gray-500 tracking-tighter uppercase">WB_SYS // V1.0</span>
-        </div>
-        <div className="w-2 h-2 rounded-full bg-green-500/50 shadow-[0_0_5px_rgba(34,197,94,0.5)]" />
-      </div>
-
+    <div 
+      className="pt-4 px-4 pb-8 flex flex-col gap-4 max-w-lg mx-auto min-h-screen"
+      style={{
+        backgroundImage: `
+          linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px)
+        `,
+        backgroundSize: '40px 40px'
+      }}
+    >
       <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5 flex items-center justify-between shadow-sm">
         <h2 className="text-lg font-bold text-white tracking-tight">Ready for a session?</h2>
         <button 
