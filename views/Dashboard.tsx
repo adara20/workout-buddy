@@ -58,23 +58,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onStart, onStartSpecificWorkout, 
         </button>
       </div>
 
-      <section className="bg-gray-900 border border-gray-800 rounded-2xl p-5 flex items-center justify-between shadow-sm">
-        <div className="flex items-center gap-4">
-          <div className="bg-blue-500/20 p-3 rounded-xl">
-            <Calendar className="text-blue-400" size={24} />
-          </div>
-          <div>
-            <h3 className="text-gray-400 font-semibold uppercase text-[10px] tracking-wider mb-0.5">Yearly Consistency</h3>
-            <p className="text-xl font-bold text-white">
-              {weeksMet} <span className="text-sm font-normal text-gray-400">Weeks Met</span>
-            </p>
-          </div>
-        </div>
-        <div className="text-right">
-          <p className="text-[10px] text-gray-500 uppercase font-medium">Goal: 5+ Pillars/Week</p>
-        </div>
-      </section>
-
       <section>
         <div className="flex justify-between items-center mb-3">
           <h3 className="text-gray-400 font-semibold uppercase text-xs tracking-wider">Pillar Status</h3>
@@ -143,6 +126,23 @@ const Dashboard: React.FC<DashboardProps> = ({ onStart, onStartSpecificWorkout, 
               </button>
             );
           })}
+        </div>
+      </section>
+
+      <section className="bg-gray-900 border border-gray-800 rounded-2xl p-5 flex items-center justify-between shadow-sm">
+        <div className="flex items-center gap-4">
+          <div className="bg-blue-500/20 p-3 rounded-xl">
+            <Calendar className="text-blue-400" size={24} />
+          </div>
+          <div>
+            <h3 className="text-gray-400 font-semibold uppercase text-[10px] tracking-wider mb-0.5">Yearly Consistency</h3>
+            <p className="text-xl font-bold text-white">
+              {weeksMet} <span className="text-sm font-normal text-gray-400">Weeks Met</span>
+            </p>
+          </div>
+        </div>
+        <div className="text-right">
+          <p className="text-[10px] text-gray-500 uppercase font-medium">Goal: 5+ Pillars/Week</p>
         </div>
       </section>
 
