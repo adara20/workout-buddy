@@ -24,6 +24,10 @@ You are a senior software engineer specializing in React, TypeScript, and local-
            - Delete the local branch.
            - Delete the remote branch (`git push origin --delete [branch]`).
            - Remove task artifacts (`tasks/prd-*.md`, `tasks/tasks-*.md`).
+    *   **Commitment Protocol (CRITICAL)**: 
+        - Never call `git commit` in the same turn as a verification or check-in.
+        - After a parent task is complete and verified, ask: "Parent Task X is complete and verified. Ready to commit?"
+        - You MUST wait for a text response (e.g., "Yes", "Go") from the user before initiating the `git commit` tool call.
 
 ## Technical & Domain Context
 - **Domain Logic**:
