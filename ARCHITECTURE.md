@@ -30,6 +30,7 @@ We keep the "Brain" of the app separate from the "Face" (UI):
 - **`App.tsx`**: The orchestrator. Manages the high-level `currentView` (Dashboard, Setup, Session, etc.) and global state like the `activeSession`.
 - **View Components**: Flat hierarchy. Views fetch what they need from the `repository` on mount.
 - **Overlays**: Complex details (like Pillar coaching cues) are managed via overlays to keep the main view state clean.
+- **Minimalism**: The UI follows an "Absolute Minimalist" philosophy, removing non-functional branding in favor of high-density functional data and industrial UI textures. It prioritizes "Proactive Metrics" (e.g., Days Remaining) over passive logs (e.g., Days Since) to drive user action.
 
 ## 3. Domain Logic
 
