@@ -1,10 +1,11 @@
 
 import React, { useEffect, useState } from 'react';
 import { repository } from '../services/repository';
-import { Pillar } from '../types';
+import { Pillar, WorkoutSession } from '../types';
 import { getDaysSince, getStatusBg, getStatusColor, getOverdueScore } from '../utils';
-import { Play, Dumbbell, AlertTriangle, ArrowUpCircle, Clock } from 'lucide-react';
+import { Play, Dumbbell, AlertTriangle, ArrowUpCircle, Clock, Calendar } from 'lucide-react';
 import PillarDetailOverlay from './PillarDetailOverlay';
+import { calculateWeeksMetYTD } from '../services/stats';
 
 interface DashboardProps {
   onStart: () => void;
@@ -14,6 +15,7 @@ interface DashboardProps {
 
 const Dashboard: React.FC<DashboardProps> = ({ onStart, onStartSpecificWorkout, currentView }) => {
   const [pillars, setPillars] = useState<Pillar[]>([]);
+  const [sessions, setSessions] = useState<WorkoutSession[]>([]);
   const [selectedPillar, setSelectedPillar] = useState<Pillar | null>(null);
   const [showRemaining, setShowRemaining] = useState(false);
   const now = Date.now();
@@ -21,6 +23,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onStart, onStartSpecificWorkout, 
   useEffect(() => {
     if (currentView === 'dashboard') {
       repository.getActivePillars().then(setPillars);
+      repository.getAllSessions().then(setSessions);
     }
   }, [currentView]);
 
@@ -29,6 +32,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onStart, onStartSpecificWorkout, 
     const scoreB = getOverdueScore(b, now);
     return scoreB - scoreA;
   });
+
+  const weeksMet = calculateWeeksMetYTD(sessions, now);
 
   return (
     <div className="p-4 flex flex-col gap-6 max-w-lg mx-auto">
@@ -55,6 +60,23 @@ const Dashboard: React.FC<DashboardProps> = ({ onStart, onStartSpecificWorkout, 
           START WORKOUT
         </button>
       </div>
+
+      <section className="bg-gray-900 border border-gray-800 rounded-2xl p-5 flex items-center justify-between shadow-sm">
+        <div className="flex items-center gap-4">
+          <div className="bg-blue-500/20 p-3 rounded-xl">
+            <Calendar className="text-blue-400" size={24} />
+          </div>
+          <div>
+            <h3 className="text-gray-400 font-semibold uppercase text-[10px] tracking-wider mb-0.5">Yearly Consistency</h3>
+            <p className="text-xl font-bold text-white">
+              {weeksMet} <span className="text-sm font-normal text-gray-400">Weeks Met</span>
+            </p>
+          </div>
+        </div>
+        <div className="text-right">
+          <p className="text-[10px] text-gray-500 uppercase font-medium">Goal: 5+ Pillars/Week</p>
+        </div>
+      </section>
 
       <section>
         <div className="flex justify-between items-center mb-3">

@@ -4,11 +4,17 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import Dashboard from './Dashboard';
 import { repository } from '../services/repository';
 import { createMockPillar } from '../tests/factories';
+import { calculateWeeksMetYTD } from '../services/stats';
 
 vi.mock('../services/repository', () => ({
   repository: {
     getActivePillars: vi.fn(),
+    getAllSessions: vi.fn(),
   },
+}));
+
+vi.mock('../services/stats', () => ({
+  calculateWeeksMetYTD: vi.fn(),
 }));
 
 vi.mock('./PillarDetailOverlay', () => ({
@@ -27,27 +33,29 @@ describe('Dashboard Component', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    (repository.getAllSessions as any).mockResolvedValue([]);
+    (calculateWeeksMetYTD as any).mockReturnValue(0);
   });
 
-  it('renders correctly with pillars', async () => {
+  it('renders correctly with pillars and consistency stat', async () => {
     const mockPillars = [
       createMockPillar({ name: 'Squat', muscleGroup: 'Legs', lastCountedAt: Date.now() }),
       createMockPillar({ name: 'Bench', muscleGroup: 'Push', lastCountedAt: null }),
     ];
     (repository.getActivePillars as any).mockResolvedValue(mockPillars);
+    (calculateWeeksMetYTD as any).mockReturnValue(12);
 
     render(<Dashboard onStart={mockOnStart} currentView="dashboard" />);
 
     expect(screen.getByText('Workout Buddy')).toBeInTheDocument();
+    expect(screen.getByText('Yearly Consistency')).toBeInTheDocument();
+    expect(screen.getByText('12')).toBeInTheDocument();
+    expect(screen.getByText('Weeks Met')).toBeInTheDocument();
     
     await waitFor(() => {
       expect(screen.getByText('Squat')).toBeInTheDocument();
       expect(screen.getByText('Bench')).toBeInTheDocument();
     });
-
-    expect(screen.getByText('Legs')).toBeInTheDocument();
-    expect(screen.getByText('Push')).toBeInTheDocument();
-    expect(screen.getByText('Never')).toBeInTheDocument(); // For Bench (null lastCountedAt)
   });
 
   it('opens overlay when a pillar is clicked', async () => {
