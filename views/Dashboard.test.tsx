@@ -47,7 +47,7 @@ describe('Dashboard Component', () => {
 
     render(<Dashboard onStart={mockOnStart} currentView="dashboard" />);
 
-    expect(screen.getByText(/WB_SYS/)).toBeInTheDocument();
+    expect(screen.getByText('Ready for a session?')).toBeInTheDocument();
     expect(screen.getByText('Yearly Consistency')).toBeInTheDocument();
     expect(screen.getByText('12')).toBeInTheDocument();
     expect(screen.getByText('Weeks Met')).toBeInTheDocument();
