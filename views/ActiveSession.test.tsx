@@ -75,7 +75,7 @@ describe('ActiveSession Component', () => {
     fireEvent.click(curlsButton);
 
     // Should show checkmark or active state
-    expect(curlsButton).toHaveClass('bg-blue-600');
+    expect(curlsButton).toHaveClass('bg-orange-500');
   });
 
   it('calls handleFinish and saves to repository', async () => {
@@ -122,7 +122,7 @@ describe('ActiveSession Component', () => {
     expect(screen.getByText('Leg Press')).toBeInTheDocument();
 
     // Toggle back
-    fireEvent.click(screen.getByText('Show Recommended'));
+    fireEvent.click(screen.getByText('Recommended'));
     expect(screen.queryByText('Leg Press')).not.toBeInTheDocument();
   });
 });

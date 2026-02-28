@@ -48,13 +48,13 @@ const App: React.FC = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white p-6 text-center">
-        <AlertCircle size={48} className="text-red-500 mb-4" />
-        <h1 className="text-xl font-bold mb-2">Database Error</h1>
-        <p className="text-gray-400 font-mono text-sm max-w-md">{error}</p>
-        <button 
-          onClick={() => window.location.reload()} 
-          className="mt-6 px-4 py-2 bg-blue-600 rounded-lg font-bold"
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-950 text-white p-6 text-center">
+        <AlertCircle size={40} className="text-red-500 mb-4" />
+        <h1 className="font-display text-2xl font-black uppercase tracking-wider mb-2">Database Error</h1>
+        <p className="text-gray-500 font-display text-sm max-w-md">{error}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="mt-6 px-6 py-3 bg-orange-500 text-black font-display font-black uppercase tracking-widest rounded-lg"
         >
           RETRY
         </button>
@@ -62,7 +62,11 @@ const App: React.FC = () => {
     );
   }
 
-  if (!initialized) return <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white font-mono">LOADING_DB...</div>;
+  if (!initialized) return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-950">
+      <span className="font-display text-xl font-black tracking-[0.4em] text-gray-600 uppercase">LOADING</span>
+    </div>
+  );
 
   const startSetup = () => {
     setPreselectedPillar(null);
@@ -152,33 +156,44 @@ const App: React.FC = () => {
 
   const showNav = currentView !== 'setup' && currentView !== 'session';
 
+  const isNavActive = (views: View[]) => views.includes(currentView);
+
   return (
     <div className={`flex flex-col min-h-screen bg-gray-950 ${showNav ? 'pb-20' : ''}`}>
       {config && !config.storagePersisted && currentView === 'dashboard' && (
         <div className="bg-yellow-500/10 border-b border-yellow-500/20 px-4 py-2 flex items-center gap-2">
           <AlertCircle size={14} className="text-yellow-500 shrink-0" />
-          <p className="text-[10px] text-yellow-200 font-medium">Storage is volatile. Export backups regularly.</p>
-          <button onClick={() => setCurrentView('settings')} className="text-[10px] text-yellow-500 underline ml-auto font-bold uppercase">Back Up</button>
+          <p className="font-display text-[11px] text-yellow-200 tracking-wide uppercase">Storage is volatile — export backups regularly.</p>
+          <button onClick={() => setCurrentView('settings')} className="font-display text-[11px] text-orange-500 underline ml-auto font-black uppercase tracking-wider">Back Up</button>
         </div>
       )}
 
       <main className="flex-grow">
         {renderView()}
       </main>
-      
+
       {currentView !== 'setup' && currentView !== 'session' && (
-        <nav className="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800 flex justify-around p-3 z-50">
-          <button onClick={() => setCurrentView('dashboard')} className={`flex flex-col items-center gap-1 ${currentView === 'dashboard' || currentView === 'summary' ? 'text-blue-500' : 'text-gray-400'}`}>
+        <nav className="fixed bottom-0 left-0 right-0 bg-gray-950 border-t border-gray-800/60 flex justify-around pb-4 z-50">
+          <button
+            onClick={() => setCurrentView('dashboard')}
+            className={`flex flex-col items-center gap-0.5 px-6 pt-2 border-t-2 transition-colors ${isNavActive(['dashboard', 'summary']) ? 'border-orange-500 text-orange-500' : 'border-transparent text-gray-600'}`}
+          >
             <Home size={20} />
-            <span className="text-xs">Home</span>
+            <span className="font-display text-[10px] uppercase tracking-widest">Home</span>
           </button>
-          <button onClick={() => setCurrentView('history')} className={`flex flex-col items-center gap-1 ${currentView === 'history' ? 'text-blue-500' : 'text-gray-400'}`}>
+          <button
+            onClick={() => setCurrentView('history')}
+            className={`flex flex-col items-center gap-0.5 px-6 pt-2 border-t-2 transition-colors ${isNavActive(['history']) ? 'border-orange-500 text-orange-500' : 'border-transparent text-gray-600'}`}
+          >
             <HistoryIcon size={20} />
-            <span className="text-xs">History</span>
+            <span className="font-display text-[10px] uppercase tracking-widest">History</span>
           </button>
-          <button onClick={() => setCurrentView('settings')} className={`flex flex-col items-center gap-1 ${currentView === 'settings' ? 'text-blue-500' : 'text-gray-400'}`}>
+          <button
+            onClick={() => setCurrentView('settings')}
+            className={`flex flex-col items-center gap-0.5 px-6 pt-2 border-t-2 transition-colors ${isNavActive(['settings']) ? 'border-orange-500 text-orange-500' : 'border-transparent text-gray-600'}`}
+          >
             <SettingsIcon size={20} />
-            <span className="text-xs">Settings</span>
+            <span className="font-display text-[10px] uppercase tracking-widest">Settings</span>
           </button>
         </nav>
       )}

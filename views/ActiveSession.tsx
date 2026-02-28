@@ -70,85 +70,85 @@ const ActiveSession: React.FC<ActiveSessionProps> = ({ initialSession, onComplet
 
   return (
     <div className="p-4 max-w-lg mx-auto flex flex-col gap-6">
-      <header className="flex items-center justify-between">
-        <button onClick={onCancel} className="text-gray-400 p-2"><X /></button>
-        <div>
-          <h2 className="text-xl font-bold text-center">Workout Session</h2>
-          <p className="text-xs text-center text-gray-500">
-            {new Date(session.date).toLocaleDateString()} • {totalExercises} / {targetExercises} Target
+      <header className="flex items-center justify-between pt-1">
+        <button onClick={onCancel} className="text-gray-600 p-2"><X size={20} /></button>
+        <div className="text-center">
+          <h2 className="font-display text-xl font-black uppercase tracking-widest text-white">Session</h2>
+          <p className="font-display text-[10px] text-gray-600 uppercase tracking-widest">
+            {totalExercises}/{targetExercises} Target
           </p>
         </div>
-        <button onClick={handleFinish} className="text-blue-500 font-bold p-2">FINISH</button>
+        <button onClick={handleFinish} className="font-display font-black text-orange-500 text-sm tracking-widest uppercase p-2">DONE</button>
       </header>
 
-      <section className="flex flex-col gap-4">
-        <h3 className="text-gray-400 font-semibold text-xs uppercase tracking-wider">Logging Pillars</h3>
+      <section className="flex flex-col gap-3">
+        <h3 className="font-display text-[10px] text-gray-600 uppercase tracking-[0.25em]">Logging Pillars</h3>
         {session.pillarsPerformed.map(pEntry => {
           const pInfo = pillarsData[pEntry.pillarId];
           return (
-            <div key={pEntry.pillarId} className="bg-gray-900 border border-gray-800 rounded-2xl p-5 flex flex-col gap-4">
+            <div key={pEntry.pillarId} className="bg-gray-900 border border-gray-800 rounded-xl p-4 flex flex-col gap-4">
               <div className="flex justify-between items-start">
                 <div>
-                  <h4 className="font-bold text-lg">{pEntry.name}</h4>
-                  <div className="flex gap-2 items-center mt-1">
+                  <h4 className="font-display text-2xl font-bold uppercase tracking-wider leading-none">{pEntry.name}</h4>
+                  <div className="flex gap-2 items-center mt-2">
                     {pEntry.counted ? (
-                      <span className="text-[10px] flex items-center gap-1 bg-green-500/10 text-green-400 px-2 py-0.5 rounded font-bold border border-green-500/20">
-                        <CheckCircle2 size={10} /> COUNTED
+                      <span className="font-display text-[10px] flex items-center gap-1 bg-green-500/10 text-green-400 px-2 py-0.5 rounded font-bold border border-green-500/20 uppercase tracking-wider">
+                        <CheckCircle2 size={10} /> Counted
                       </span>
                     ) : (
-                      <span className="text-[10px] flex items-center gap-1 bg-gray-500/10 text-gray-400 px-2 py-0.5 rounded font-bold">
-                        DNP (Min: {pInfo?.minWorkingWeight}lb)
+                      <span className="font-display text-[10px] flex items-center gap-1 bg-gray-800 text-gray-500 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
+                        DNP — Min: {pInfo?.minWorkingWeight}lb
                       </span>
                     )}
                     {pEntry.isPR && (
-                      <span className="text-[10px] flex items-center gap-1 bg-yellow-500/10 text-yellow-500 px-2 py-0.5 rounded font-bold border border-yellow-500/20">
+                      <span className="font-display text-[10px] flex items-center gap-1 bg-yellow-500/10 text-yellow-500 px-2 py-0.5 rounded font-bold border border-yellow-500/20 uppercase tracking-wider">
                         <TrendingUp size={10} /> PR
                       </span>
                     )}
                     {pEntry.warning && (
-                      <span className="text-[10px] flex items-center gap-1 bg-red-500/10 text-red-400 px-2 py-0.5 rounded font-bold border border-red-500/20">
-                        <AlertCircle size={10} /> LOW WEIGHT
+                      <span className="font-display text-[10px] flex items-center gap-1 bg-red-500/10 text-red-400 px-2 py-0.5 rounded font-bold border border-red-500/20 uppercase tracking-wider">
+                        <AlertCircle size={10} /> Low
                       </span>
                     )}
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-[10px] text-gray-500 uppercase">Current PR</p>
-                  <p className="font-bold text-gray-300">{pInfo?.prWeight || 0}lb</p>
+                  <p className="font-display text-[9px] text-gray-600 uppercase tracking-widest">PR</p>
+                  <p className="font-display font-bold text-gray-400 text-lg leading-none">{pInfo?.prWeight || 0}<span className="text-xs font-normal">lb</span></p>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between gap-4 mt-2">
+              <div className="flex items-center gap-4">
                 <div className="flex flex-col items-center flex-1">
-                  <span className="text-4xl font-black text-white tabular-nums">{pEntry.weight}</span>
-                  <span className="text-xs text-gray-500 uppercase font-bold tracking-widest">LBS</span>
+                  <span className="font-display text-8xl font-black text-white leading-none tabular-nums">{pEntry.weight}</span>
+                  <span className="font-display text-[10px] text-gray-600 uppercase tracking-[0.35em] mt-1">LBS</span>
                 </div>
-                
+
                 <div className="flex flex-col gap-2 flex-1">
-                   <div className="flex gap-2">
-                    <button 
+                  <div className="flex gap-2">
+                    <button
                       onClick={() => updateWeight(pEntry.pillarId, -5)}
-                      className="flex-1 h-12 bg-gray-800 rounded-lg flex items-center justify-center text-gray-300 hover:bg-gray-700 active:scale-95 font-bold"
+                      className="flex-1 h-14 bg-gray-800 hover:bg-gray-700 active:scale-95 rounded-lg flex items-center justify-center font-display font-bold text-lg text-gray-300 transition-colors"
                     >
                       -5
                     </button>
-                    <button 
+                    <button
                       onClick={() => updateWeight(pEntry.pillarId, 5)}
-                      className="flex-1 h-12 bg-gray-800 rounded-lg flex items-center justify-center text-white hover:bg-gray-700 active:scale-95 font-bold"
+                      className="flex-1 h-14 bg-gray-800 hover:bg-gray-700 active:scale-95 rounded-lg flex items-center justify-center font-display font-bold text-lg text-white transition-colors"
                     >
                       +5
                     </button>
                   </div>
                   <div className="flex gap-2">
-                    <button 
+                    <button
                       onClick={() => updateWeight(pEntry.pillarId, -45)}
-                      className="flex-1 h-12 bg-gray-800 rounded-lg flex items-center justify-center text-gray-300 hover:bg-gray-700 active:scale-95 font-bold"
+                      className="flex-1 h-14 bg-gray-800 hover:bg-gray-700 active:scale-95 rounded-lg flex items-center justify-center font-display font-bold text-lg text-gray-400 transition-colors"
                     >
                       -45
                     </button>
-                    <button 
+                    <button
                       onClick={() => updateWeight(pEntry.pillarId, 45)}
-                      className="flex-1 h-12 bg-gray-800 rounded-lg flex items-center justify-center text-white hover:bg-gray-700 active:scale-95 font-bold"
+                      className="flex-1 h-14 bg-gray-800 hover:bg-gray-700 active:scale-95 rounded-lg flex items-center justify-center font-display font-bold text-lg text-white transition-colors"
                     >
                       +45
                     </button>
@@ -160,11 +160,11 @@ const ActiveSession: React.FC<ActiveSessionProps> = ({ initialSession, onComplet
         })}
       </section>
 
-      <section className="flex flex-col gap-4">
-        <div className="flex justify-between items-end">
-          <div className="flex flex-col gap-1">
-            <h3 className="text-gray-400 font-semibold text-xs uppercase tracking-wider">Accessory Suggestions</h3>
-            {needsMore && <span className="text-[10px] text-yellow-500 font-bold uppercase animate-pulse">ADD {targetExercises - totalExercises} MORE</span>}
+      <section className="flex flex-col gap-3">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <h3 className="font-display text-[10px] text-gray-600 uppercase tracking-[0.25em]">Accessories</h3>
+            {needsMore && <span className="font-display text-[10px] text-yellow-500 font-black uppercase tracking-wider animate-pulse">+{targetExercises - totalExercises} needed</span>}
           </div>
           {(() => {
             const linkedIds = Array.from(new Set(
@@ -172,11 +172,11 @@ const ActiveSession: React.FC<ActiveSessionProps> = ({ initialSession, onComplet
             ));
             if (linkedIds.length === 0) return null;
             return (
-              <button 
+              <button
                 onClick={() => setShowAll(!showAll)}
-                className="text-[10px] font-bold uppercase tracking-tighter px-2 py-1 rounded border border-gray-800 text-gray-500"
+                className="font-display text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded border border-gray-800 text-gray-600 hover:border-gray-700"
               >
-                {showAll ? 'Show Recommended' : 'Show All'}
+                {showAll ? 'Recommended' : 'Show All'}
               </button>
             );
           })()}
@@ -189,20 +189,20 @@ const ActiveSession: React.FC<ActiveSessionProps> = ({ initialSession, onComplet
             const filtered = showAll || linkedIds.length === 0
               ? allAccessories
               : allAccessories.filter(acc => linkedIds.includes(acc.id));
-            
+
             return filtered.map(acc => {
               const isDone = !!session.accessoriesPerformed.find(a => a.accessoryId === acc.id);
               return (
                 <button
                   key={acc.id}
                   onClick={() => toggleAccessory(acc)}
-                  className={`px-4 py-2 rounded-xl border text-sm font-medium transition-all flex items-center gap-2 ${
-                    isDone 
-                    ? 'bg-blue-600 border-blue-400 text-white shadow-lg shadow-blue-900/40' 
-                    : 'bg-gray-900 border-gray-800 text-gray-400'
+                  className={`px-3 py-1.5 rounded-lg border font-display font-bold text-sm uppercase tracking-wide transition-all flex items-center gap-1.5 ${
+                    isDone
+                      ? 'bg-orange-500 border-orange-500 text-black'
+                      : 'bg-gray-900 border-gray-800 text-gray-500 hover:border-gray-700'
                   }`}
                 >
-                  {isDone ? <Check size={14} /> : <Plus size={14} />}
+                  {isDone ? <Check size={12} /> : <Plus size={12} />}
                   {acc.name}
                 </button>
               );
@@ -212,40 +212,40 @@ const ActiveSession: React.FC<ActiveSessionProps> = ({ initialSession, onComplet
       </section>
 
       <section className="flex flex-col gap-3">
-        <h3 className="text-gray-400 font-semibold text-xs uppercase tracking-wider">Session Details</h3>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-3">
-            <label className="text-[10px] text-gray-500 uppercase font-bold">Minutes</label>
-            <input 
-              type="number" 
-              placeholder="Duration" 
-              className="bg-transparent w-full text-lg font-bold outline-none" 
+        <h3 className="font-display text-[10px] text-gray-600 uppercase tracking-[0.25em]">Session Details</h3>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-gray-900/70 border border-gray-800 rounded-xl p-3">
+            <label className="font-display text-[10px] text-gray-600 uppercase tracking-widest block mb-1">Minutes</label>
+            <input
+              type="number"
+              placeholder="0"
+              className="bg-transparent w-full font-display text-2xl font-black outline-none text-white placeholder-gray-700"
               value={session.durationMinutes || ''}
               onChange={e => setSession({...session, durationMinutes: parseInt(e.target.value) || 0})}
             />
           </div>
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-3">
-            <label className="text-[10px] text-gray-500 uppercase font-bold">Calories</label>
-            <input 
-              type="number" 
-              placeholder="Est. Burn" 
-              className="bg-transparent w-full text-lg font-bold outline-none"
+          <div className="bg-gray-900/70 border border-gray-800 rounded-xl p-3">
+            <label className="font-display text-[10px] text-gray-600 uppercase tracking-widest block mb-1">Calories</label>
+            <input
+              type="number"
+              placeholder="0"
+              className="bg-transparent w-full font-display text-2xl font-black outline-none text-white placeholder-gray-700"
               value={session.calories || ''}
               onChange={e => setSession({...session, calories: parseInt(e.target.value) || 0})}
             />
           </div>
         </div>
-        <textarea 
-          placeholder="Session notes (optional)..." 
-          className="bg-gray-900 border border-gray-800 rounded-xl p-4 text-sm outline-none h-24"
+        <textarea
+          placeholder="Session notes..."
+          className="bg-gray-900/70 border border-gray-800 rounded-xl p-4 font-display text-base outline-none h-20 resize-none placeholder-gray-700"
           value={session.notes || ''}
           onChange={e => setSession({...session, notes: e.target.value})}
-        ></textarea>
+        />
       </section>
 
       <button
         onClick={handleFinish}
-        className="w-full bg-blue-600 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2 mt-4 shadow-xl shadow-blue-900/40"
+        className="w-full bg-orange-500 hover:bg-orange-400 active:bg-orange-600 text-black font-display font-black py-4 rounded-xl flex items-center justify-center gap-2 mt-2 uppercase tracking-widest text-lg transition-colors"
       >
         FINISH & SAVE SESSION
       </button>

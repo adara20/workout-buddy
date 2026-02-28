@@ -109,10 +109,10 @@ describe('Golden Path Integration', () => {
     // 5. Verify Dashboard update
     await waitFor(() => expect(screen.getByText('Workout Buddy')).toBeInTheDocument());
     
-    // Wait for pillars to load on return
+    // Wait for pillars to load on return — pillar just counted, cadenceDays=7, so daysRemaining=7
     await waitFor(() => {
-        const zeroDayElements = screen.queryAllByText('0d');
-        expect(zeroDayElements.length).toBeGreaterThan(0);
+        const sevenDayElements = screen.queryAllByText('7d');
+        expect(sevenDayElements.length).toBeGreaterThan(0);
     }, { timeout: 2000 });
 
     // 6. Check History
