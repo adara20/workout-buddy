@@ -50,6 +50,7 @@ describe('Error Handling and Edge Cases', () => {
       repository: {
         getConfig: vi.fn(),
         getActivePillars: vi.fn().mockResolvedValue([]),
+        getAllSessions: vi.fn().mockResolvedValue([]),
         setSyncListener: vi.fn()
       }
     }));

@@ -41,7 +41,7 @@ describe('Weight Filtered Workout Count Integration', () => {
     
     // In Detail Overlay
     await waitFor(() => expect(screen.getByText('Count')).toBeInTheDocument());
-    const initialCount = within(screen.getByText('Count').closest('.rounded-2xl')!).getByText('0');
+    const initialCount = within(screen.getByText('Count').closest('.rounded-xl')!).getByText('0');
     expect(initialCount).toBeInTheDocument();
     
     // Start workout FROM the overlay
@@ -82,7 +82,7 @@ describe('Weight Filtered Workout Count Integration', () => {
     await waitFor(() => expect(screen.getByText('Test Pillar')).toBeInTheDocument());
     fireEvent.click(screen.getByText('Test Pillar'));
     await waitFor(() => {
-        const countValue = within(screen.getByText('Count').closest('.rounded-2xl')!).getByText('0');
+        const countValue = within(screen.getByText('Count').closest('.rounded-xl')!).getByText('0');
         expect(countValue).toBeInTheDocument();
     });
     
@@ -116,7 +116,7 @@ describe('Weight Filtered Workout Count Integration', () => {
     await waitFor(() => expect(screen.getByText('Test Pillar')).toBeInTheDocument());
     fireEvent.click(screen.getByText('Test Pillar'));
     await waitFor(() => {
-        const countValue = within(screen.getByText('Count').closest('.rounded-2xl')!).getByText('1');
+        const countValue = within(screen.getByText('Count').closest('.rounded-xl')!).getByText('1');
         expect(countValue).toBeInTheDocument();
     });
   });
