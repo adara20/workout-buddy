@@ -168,7 +168,7 @@ const App: React.FC = () => {
         </div>
       )}
 
-      <main className="flex-grow" style={showNav ? { paddingBottom: 'calc(3.5rem + max(env(safe-area-inset-bottom), 1rem))' } : {}}>
+      <main className="flex-grow flex flex-col" style={showNav ? { paddingBottom: 'calc(3.5rem + max(env(safe-area-inset-bottom), 1rem))' } : {}}>
         {renderView()}
       </main>
 

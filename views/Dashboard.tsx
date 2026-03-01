@@ -35,7 +35,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onStart, onStartSpecificWorkout, 
   const weeksMet = calculateWeeksMetYTD(sessions, now);
 
   return (
-    <div className="pt-5 px-4 pb-8 flex flex-col gap-5 max-w-lg mx-auto">
+    <div className="pt-5 px-4 pb-4 flex flex-col gap-5 flex-1 max-w-lg mx-auto w-full">
       {/* Header */}
       <div className="flex items-center justify-between pt-1">
         <div>
@@ -117,7 +117,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onStart, onStartSpecificWorkout, 
       </section>
 
       {/* Consistency */}
-      <section className="bg-gray-900/70 border border-gray-800 rounded-xl p-4 flex items-center justify-between">
+      <section className="mt-auto bg-gray-900/70 border border-gray-800 rounded-xl p-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Calendar className="text-gray-600" size={20} />
           <div>
