@@ -117,7 +117,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onStart, onStartSpecificWorkout, 
       </section>
 
       {/* Consistency */}
-      <section className="mt-auto bg-gray-900/70 border border-gray-800 rounded-xl p-4 flex items-center justify-between">
+      <section className="bg-gray-900/70 border border-gray-800 rounded-xl p-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Calendar className="text-gray-600" size={20} />
           <div>
