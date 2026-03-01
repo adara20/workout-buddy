@@ -159,7 +159,7 @@ const App: React.FC = () => {
   const isNavActive = (views: View[]) => views.includes(currentView);
 
   return (
-    <div className={`flex flex-col min-h-screen bg-gray-950 ${showNav ? 'pb-20' : ''}`}>
+    <div className="flex flex-col min-h-screen bg-gray-950" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
       {config && !config.storagePersisted && currentView === 'dashboard' && (
         <div className="bg-yellow-500/10 border-b border-yellow-500/20 px-4 py-2 flex items-center gap-2">
           <AlertCircle size={14} className="text-yellow-500 shrink-0" />
@@ -168,12 +168,12 @@ const App: React.FC = () => {
         </div>
       )}
 
-      <main className="flex-grow">
+      <main className="flex-grow" style={showNav ? { paddingBottom: 'calc(3.5rem + max(env(safe-area-inset-bottom), 1rem))' } : {}}>
         {renderView()}
       </main>
 
       {currentView !== 'setup' && currentView !== 'session' && (
-        <nav className="fixed bottom-0 left-0 right-0 bg-gray-950 border-t border-gray-800/60 flex justify-around pb-4 z-50">
+        <nav className="fixed bottom-0 left-0 right-0 bg-gray-950 border-t border-gray-800/60 flex justify-around z-50" style={{ paddingBottom: 'max(env(safe-area-inset-bottom), 1rem)' }}>
           <button
             onClick={() => setCurrentView('dashboard')}
             className={`flex flex-col items-center gap-0.5 px-6 pt-2 border-t-2 transition-colors ${isNavActive(['dashboard', 'summary']) ? 'border-orange-500 text-orange-500' : 'border-transparent text-gray-600'}`}
